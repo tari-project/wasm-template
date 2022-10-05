@@ -2,7 +2,7 @@ use tari_template_macros::template;
 
 #[template]
 mod counter {
-    struct Counter {
+    pub struct Counter {
         value: u32,
     }
 
