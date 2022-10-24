@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
 
-    use tari_dan_engine::tooling::TemplateTest;
+    use tari_template_test_tooling::TemplateTest;
     use tari_template_lib::args;
     use tari_template_lib::models::ComponentAddress;
 
