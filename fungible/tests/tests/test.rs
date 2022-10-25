@@ -8,8 +8,9 @@ mod test {
     #[test]
     fn test_fungible() {
         let template_test = TemplateTest::new(vec!["../package"]);
-        let component_address: ComponentAddress =
-            template_test.call_function("FungibleAccount", "initial_mint", args![Amount(100)]);
+        let initial_supply = Amount(1_000_000_000_000);
+        let owner_address: ComponentAddress =
+            template_test.call_function("FungibleAccount", "initial_mint", args![initial_supply]);
 
         let receiver_address: ComponentAddress =
             template_test.call_method(owner_address, "new_account", args![]);
