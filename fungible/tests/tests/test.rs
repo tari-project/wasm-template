@@ -1,8 +1,9 @@
 #[cfg(test)]
 mod test {
-
+    use tari_engine_types::instruction::Instruction;
     use tari_template_lib::args;
     use tari_template_lib::models::ComponentAddress;
+    use tari_template_lib::prelude::Amount;
     use tari_template_test_tooling::TemplateTest;
 
     #[test]
