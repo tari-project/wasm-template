@@ -3,7 +3,7 @@ mod test {
     use tari_engine_types::instruction::Instruction;
     use tari_template_lib::args;
     use tari_template_lib::models::ComponentAddress;
-    use tari_template_lib::prelude::Amount;
+    use tari_template_lib::prelude::*;
     use tari_template_test_tooling::TemplateTest;
 
     #[test]
@@ -58,12 +58,12 @@ mod test {
         }
         eprintln!("{:?}", result.execution_results);
         assert_eq!(
-            result.execution_results[3].decode().unwrap(),
+            result.execution_results[3].decode::<Amount>().unwrap(),
             Amount(1)
         );
         // After minting a token, the total_supply of tokens is 1
         assert_eq!(
-            result.execution_results[4].decode().unwrap(),
+            result.execution_results[4].decode::<Amount>().unwrap(),
             Amount(1)
         );
     }
