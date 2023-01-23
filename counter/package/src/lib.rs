@@ -1,4 +1,4 @@
-use tari_template_macros::template;
+use tari_template_lib::prelude::*;
 
 #[template]
 mod counter {
