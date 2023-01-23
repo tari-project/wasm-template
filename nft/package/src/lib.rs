@@ -32,11 +32,14 @@ mod nft_template {
     impl Nft {
         pub fn new() -> Self {
             // Create the non-fungible resource
-            let bucket = ResourceBuilder::non_fungible()
-                .build();
+            let address = ResourceBuilder::non_fungible().build();
             Self {
-                address: bucket.resource_address(),
+                address,
             }
+        }
+
+        pub fn get_resource_address(&self) -> ResourceAddress {
+            self.address
         }
 
         pub fn mint(&mut self) -> Bucket {
