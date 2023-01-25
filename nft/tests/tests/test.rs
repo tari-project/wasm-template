@@ -27,7 +27,7 @@ mod test {
             template_test.call_method(nft_component, "get_resource_address", args![]);
 
         // Mint token and transfer to the account
-        let result = template_test.execute(vec![
+        let result = template_test.try_execute(vec![
             Instruction::CallMethod {
                 component_address: nft_component,
                 method: "mint".to_string(),
@@ -39,7 +39,7 @@ mod test {
             Instruction::CallMethod {
                 component_address: receiver_address,
                 method: "deposit".to_string(),
-                args: args![Workspace(b"new_nft")],
+                args: args![Variable("new_nft")],
             },
             Instruction::CallMethod {
                 component_address: receiver_address,
@@ -51,7 +51,7 @@ mod test {
                 method: "total_supply".to_string(),
                 args: args![],
             },
-        ]);
+        ]).unwrap();
 
         for log in result.logs {
             eprintln!("LOG: {}", log);

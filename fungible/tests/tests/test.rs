@@ -16,7 +16,7 @@ mod test {
         let receiver_address: ComponentAddress =
             template_test.call_method(owner_address, "new_account", args![]);
 
-        let result = template_test.execute(vec![
+        let result = template_test.try_execute(vec![
             Instruction::CallMethod {
                 component_address: owner_address,
                 method: "withdraw".to_string(),
@@ -28,7 +28,7 @@ mod test {
             Instruction::CallMethod {
                 component_address: receiver_address,
                 method: "deposit".to_string(),
-                args: args![Workspace(b"foo_bucket")],
+                args: args![Variable("foo_bucket")],
             },
             Instruction::CallMethod {
                 component_address: owner_address,
@@ -40,7 +40,7 @@ mod test {
                 method: "balance".to_string(),
                 args: args![],
             },
-        ]);
+        ]).unwrap();
         for log in result.logs {
             eprintln!("LOG: {}", log);
         }
