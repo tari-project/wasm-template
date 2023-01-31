@@ -44,7 +44,7 @@ mod nft_template {
 
         pub fn mint(&mut self) -> Bucket {
             // Mint a new token with a random ID
-            let id = NftTokenId::random();
+            let id = NonFungibleId::random();
             // These are characteristic of the NFT and are immutable
             let mut immutable_data = Metadata::new();
             immutable_data
