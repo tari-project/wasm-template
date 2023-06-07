@@ -1,2 +1,2 @@
 [template]
-subtemplates = ["counter", "fungible", "nft"]
+subtemplates = ["counter", "fungible", "nft", "swap"]
