@@ -10,7 +10,8 @@ mod faucet_template {
 
     impl TestFaucet {
         pub fn mint(initial_supply: Amount, token_symbol: String) -> Self {
-            let coins = ResourceBuilder::fungible(&token_symbol)
+            let coins = ResourceBuilder::fungible()
+                .with_token_symbol(&token_symbol)
                 .initial_supply(initial_supply)
                 .build_bucket();
 
