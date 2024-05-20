@@ -16,7 +16,11 @@ mod counter {
         }
 
         pub fn increase(&mut self) {
-            self.value += 1;
+            self.increase_by(1)
+        }
+
+        pub fn increase_by(&mut self, value: u32) {
+            self.value = self.value.checked_add(value).expect("value overflowed");
         }
     }
 }
