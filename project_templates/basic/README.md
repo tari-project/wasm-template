@@ -1,12 +1,3 @@
-# Template for Tari WASM projects
+# {{ project-name }}
 
-To use, install `cargo-generate`
-
-```
-cargo install cargo-generate
-```
-
-Then create a new project (replace `fungible` with the template you want to use):
-```
-cargo generate https://github.com/tari-project/wasm-template.git fungible
-```
+This project is a Tari template project that can contain multiple sub-projects.
