@@ -1,3 +1,3 @@
 # {{ project-name }}
 
-This project is a Tari template project that can contain multiple sub-projects.
+This project is a Tari template project that can contain multiple WASM template sub-projects.
