@@ -1,4 +1,4 @@
-# {{ project-name }}
+# {{ project-name | title_case }}
 
 This project is a Tari template project that can contain multiple WASM template sub-projects.
 
