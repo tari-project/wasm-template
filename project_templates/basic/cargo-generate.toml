@@ -1,3 +1,2 @@
 [template]
 ignore = [ "template.toml" ]
-include = [ "templates" ]
