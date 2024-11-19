@@ -1,8 +1,27 @@
-[workspace]
-members = [
-    "tests"
-]
+[package]
+name = "{{project-name}}"
+version = "0.1.0"
+authors = ["{{authors}}"]
+edition = "2021"
 
-exclude = [
-    "package"
-]
+[dependencies]
+tari_template_abi = { git = "https://github.com/tari-project/tari-dan.git", branch = "development", package = "tari_template_abi" }
+tari_template_lib = { git = "https://github.com/tari-project/tari-dan.git", branch = "development", package = "tari_template_lib" }
+
+[profile.release]
+opt-level = 's'     # Optimize for size.
+lto = true          # Enable Link Time Optimization.
+codegen-units = 1   # Reduce number of codegen units to increase optimizations.
+panic = 'abort'     # Abort on panic.
+strip = "debuginfo" # Strip debug info.
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dev-dependencies]
+log = "*"
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-dan.git", branch = "development", package = "tari_template_test_tooling" }
+tari_engine_types = { git = "https://github.com/tari-project/tari-dan.git", branch = "development", package = "tari_engine_types" }
+tari_transaction = { git = "https://github.com/tari-project/tari-dan.git", branch = "development" }
+tari_dan_common_types = { git = "https://github.com/tari-project/tari-dan.git", branch = "development", package = "tari_dan_common_types" }
+tari_common_types = { git = "https://github.com/tari-project/tari.git", branch = "development", package = "tari_common_types" }
