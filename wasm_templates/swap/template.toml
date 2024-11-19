@@ -1,2 +1,4 @@
 name = "Tari Swap"
 description = "Token swapping template"
+
+[extra]

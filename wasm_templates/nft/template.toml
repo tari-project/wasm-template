@@ -1,2 +1,4 @@
 name = "NFT"
 description = "A simple **NFT template** to create your own."
+
+[extra]

@@ -1,2 +1,4 @@
 name = "Fungible Tokens"
 description = "A **Fungible Token** template to create your own fungible token."
+
+[extra]

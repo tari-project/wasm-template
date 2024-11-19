@@ -1,2 +1,4 @@
 name = "Counter"
 description = "A basic counter **example template** that can be incremented."
+
+[extra]
