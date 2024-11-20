@@ -88,10 +88,10 @@ mod {{ project-name | snake_case }} {
             });
         }
 
-        fn with_sparkle_mut<F: FnOnce(&mut {{ project-name | upper_camel_case }})>(&self, id: NonFungibleId, f: F) {
+        fn with_{{ project-name | snake_case }}_mut<F: FnOnce(&mut {{ project-name | upper_camel_case }})>(&self, id: NonFungibleId, f: F) {
             let resource_manager = ResourceManager::get(self.resource_address);
             let mut nft = resource_manager.get_non_fungible(&id);
-            let mut data = nft.get_mutable_data::<Sparkle>();
+            let mut data = nft.get_mutable_data::<{{ project-name | upper_camel_case }}>();
             f(&mut data);
             nft.set_mutable_data(&data);
         }
