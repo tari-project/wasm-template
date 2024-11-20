@@ -1,12 +1,12 @@
 use tari_template_lib::prelude::*;
 
 #[template]
-mod counter {
-    pub struct Counter {
+mod {{ project-name | snake_case }} {
+    pub struct {{ project-name | upper_camel_case }} {
         value: u32,
     }
 
-    impl Counter {
+    impl {{ project-name | upper_camel_case }} {
         pub fn new() -> Self {
             Self { value: 0 }
         }

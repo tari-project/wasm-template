@@ -22,22 +22,22 @@
 use tari_template_lib::prelude::*;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct Sparkle {
+pub struct {{ project-name | upper_camel_case }} {
     pub brightness: u32,
 }
 
 #[template]
-mod sparkle_nft_template {
+mod {{ project-name | snake_case }} {
     use super::*;
 
-    pub struct SparkleNft {
+    pub struct {{ project-name | upper_camel_case }}Nft {
         resource_address: ResourceAddress,
     }
 
-    impl SparkleNft {
+    impl {{ project-name | upper_camel_case }}Nft {
         pub fn new() -> Self {
             let resource_address = ResourceBuilder::non_fungible()
-                .with_token_symbol("SPARKLE")
+                .with_token_symbol("{{ project-name | shouty_kebab_case }}")
                 .with_access_rules(
                     ResourceAccessRules::new()
                         .mintable(AccessRule::AllowAll)
@@ -63,10 +63,10 @@ mod sparkle_nft_template {
             // These are characteristic of the NFT and are immutable
             let mut immutable_data = Metadata::new();
             immutable_data
-                .insert("name", format!("Sparkle{}", id))
+                .insert("name", format!("{{ project-name | upper_camel_case }}{}", id))
                 .insert(
                     "image_url",
-                    format!("https://nft.storage/sparkle{}.png", id),
+                    format!("https://nft.storage/{{ project-name | snake_case }}{}.png", id),
                 );
 
             // Mint the NFT, this will fail if the token ID already exists
@@ -88,7 +88,7 @@ mod sparkle_nft_template {
             });
         }
 
-        fn with_sparkle_mut<F: FnOnce(&mut Sparkle)>(&self, id: NonFungibleId, f: F) {
+        fn with_sparkle_mut<F: FnOnce(&mut {{ project-name | upper_camel_case }})>(&self, id: NonFungibleId, f: F) {
             let resource_manager = ResourceManager::get(self.resource_address);
             let mut nft = resource_manager.get_non_fungible(&id);
             let mut data = nft.get_mutable_data::<Sparkle>();

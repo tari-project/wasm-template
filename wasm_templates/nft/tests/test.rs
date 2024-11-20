@@ -16,7 +16,7 @@ mod test {
 
         // Create NFT component and resource
         let nft_component: ComponentAddress =
-            template_test.call_function("SparkleNft", "new", args![], vec![]);
+            template_test.call_function("{{ project-name | upper_camel_case }}Nft", "new", args![], vec![]);
 
         // Initially the total_supply of tokens is 0
         let total_supply: Amount =

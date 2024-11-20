@@ -1,3 +1,5 @@
+# {{ project-name | title_case }}
+
 To build:
 
 ```

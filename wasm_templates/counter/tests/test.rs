@@ -6,7 +6,7 @@ use tari_template_test_tooling::TemplateTest;
 fn test_increment() {
     let mut template_test = TemplateTest::new(["."]);
     let component_address: ComponentAddress =
-        template_test.call_function("Counter", "new", args![], vec![]);
+        template_test.call_function("{{ project-name | upper_camel_case }}", "new", args![], vec![]);
     let proof = template_test.get_test_proof();
     let value: u32 =
         template_test.call_method(component_address, "value", args![], vec![proof.clone()]);

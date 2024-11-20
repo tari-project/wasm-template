@@ -8,7 +8,7 @@ fn test_fungible() {
     let mut template_test = TemplateTest::new(vec!["."]);
     let initial_supply = Amount(1_000_000_000_000);
     let fungible_account: ComponentAddress =
-        template_test.call_function("FungibleAccount", "mint", args![initial_supply, "TEST".to_string()], vec![]);
+        template_test.call_function("{{ project-name | upper_camel_case }}", "mint", args![initial_supply, "TEST".to_string()], vec![]);
     let fungible_account_vault: ResourceAddress = template_test.call_method(fungible_account, "vault_address", args![], vec![]);
 
     let (receiver_address, receiver_proof, receiver_secret_key) = template_test.create_empty_account();

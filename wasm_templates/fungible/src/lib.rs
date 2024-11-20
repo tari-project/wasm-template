@@ -1,14 +1,14 @@
 use tari_template_lib::prelude::*;
 
 #[template]
-pub mod fungible_template {
+pub mod {{ project-name | snake_case }} {
     use super::*;
 
-    pub struct FungibleAccount {
+    pub struct {{ project-name | upper_camel_case }} {
         vault: Vault,
     }
 
-    impl FungibleAccount {
+    impl {{ project-name | upper_camel_case }} {
         pub fn mint(initial_supply: Amount, token_symbol: String) -> Component<Self> {
             let coins = ResourceBuilder::fungible()
                 .with_token_symbol(&token_symbol)

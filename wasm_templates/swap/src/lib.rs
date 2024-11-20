@@ -24,17 +24,17 @@ use tari_template_abi::rust::collections::HashMap;
 use tari_template_lib::prelude::*;
 
 #[template]
-mod tariswap {
+mod {{ project-name | snake_case }} {
     use super::*;
 
     // Constant product AMM
-    pub struct TariSwapPool {
+    pub struct {{ project-name | upper_camel_case }}Pool {
         pools: HashMap<ResourceAddress, Vault>,
         lp_resource: ResourceAddress,
         fee: u16,
     }
 
-    impl TariSwapPool {
+    impl {{ project-name | upper_camel_case }}Pool {
         // Initialises a new pool component for for the pool A - B
         // the fees is represented as a per-mil quantity (e.g. "1" represents "0.1%")
         pub fn new(a_addr: ResourceAddress, b_addr: ResourceAddress, fee: u16) -> Self {
