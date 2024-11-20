@@ -80,7 +80,7 @@ mod {{ project-name | snake_case }} {
 
         pub fn inc_brightness(&mut self, id: NonFungibleId, brightness: u32) {
             debug!(format!("Increase brightness on {} by {}", id, brightness));
-            self.with_sparkle_mut(id, |data| {
+            self.with_{{ project-name | snake_case }}_mut(id, |data| {
                 data.brightness = data
                     .brightness
                     .checked_add(brightness)
