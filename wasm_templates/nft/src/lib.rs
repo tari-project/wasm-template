@@ -71,7 +71,7 @@ mod {{ project-name | snake_case }} {
 
             // Mint the NFT, this will fail if the token ID already exists
             let res_manager = ResourceManager::get(self.resource_address);
-            res_manager.mint_non_fungible(id.clone(), &immutable_data, &Sparkle { brightness: 0 })
+            res_manager.mint_non_fungible(id.clone(), &immutable_data, &{{ project-name | upper_camel_case }} { brightness: 0 })
         }
 
         pub fn total_supply(&self) -> Amount {
