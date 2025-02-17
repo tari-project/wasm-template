@@ -1,0 +1,6 @@
+name = "Starter"
+description = "The **starter** project which includes a basic **wasm template** project to get started easily."
+
+[extra]
+templates_dir = "templates"
+wasm_templates = "counter,nft"
