@@ -1,2 +1,2 @@
 [template]
-subtemplates = ["basic"]
+subtemplates = ["basic", "starter"]
