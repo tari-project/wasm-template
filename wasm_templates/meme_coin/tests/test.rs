@@ -49,7 +49,7 @@ fn create_meme_coin(test: &mut TemplateTest, name: &str) -> CreateMemeCoinResult
 #[test]
 fn test_memecoin_owner_only_allowed_method() {
     let mut template_test = TemplateTest::new(vec!["."]);
-    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | upper_case }}");
+    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
 
     // make sure that admin only method is working
     let result = template_test.execute_expect_success(
@@ -92,7 +92,7 @@ fn test_memecoin_owner_only_allowed_method() {
 #[test]
 fn test_memecoin_owner_transfer_coins() {
     let mut template_test = TemplateTest::new(vec!["."]);
-    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | upper_case }}");
+    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
     let (target_account_addr, _, _) = template_test.create_empty_account();
 
     let withdraw_amount = Amount::new(10);
@@ -144,7 +144,7 @@ fn test_memecoin_owner_transfer_coins() {
 #[test]
 fn test_memecoin_owner_burn() {
     let mut template_test = TemplateTest::new(vec!["."]);
-    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | upper_case }}");
+    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
 
     let burned_amount = Amount::new(100);
 
