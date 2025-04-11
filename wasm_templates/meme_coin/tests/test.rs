@@ -1,8 +1,8 @@
-use std::ops::Sub;
+use std::ops::{Add, Sub};
 use tari_engine_types::commit_result::RejectReason;
 use tari_template_lib::args;
-use tari_template_lib::models::NonFungibleAddress;
-use tari_template_lib::prelude::{Amount, Bucket, ComponentAddress};
+use tari_template_lib::models::{Metadata, NonFungibleAddress};
+use tari_template_lib::prelude::{Amount, ComponentAddress};
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::TemplateTest;
 use tari_transaction::Transaction;
@@ -20,21 +20,25 @@ fn create_meme_coin(test: &mut TemplateTest, name: &str) -> CreateMemeCoinResult
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
 
     // create new memecoin
+    let memecoin_template_addr = test.get_template_address("{{ project-name | upper_camel_case }}");
     let create_coin_result = test.execute_expect_success(
         Transaction::builder()
             .call_function(
-                test.get_template_address("{{ project-name | upper_camel_case }}"),
+                memecoin_template_addr,
                 "mint",
-                args![initial_supply, name.to_string(), None::<String>],
+                args![
+                    initial_supply,
+                    name.to_string(),
+                    None::<String>,
+                    Metadata::new()
+                ],
             )
-            .put_last_instruction_output_on_workspace("ret")
-            .call_method(account_component, "deposit", args![Workspace("ret.1")])
             .build_and_seal(&account_secret_key),
         vec![owner_proof.clone()],
     );
 
-    let (coin_component, _) = create_coin_result.finalize.execution_results[0]
-        .decode::<(ComponentAddress, Bucket)>()
+    let coin_component = create_coin_result.finalize.execution_results[0]
+        .decode::<ComponentAddress>()
         .unwrap();
 
     CreateMemeCoinResult {
@@ -167,5 +171,34 @@ fn test_memecoin_owner_burn() {
     assert_eq!(
         memecoin_balance,
         meme_coin_result.initial_supply.sub(burned_amount)
+    );
+}
+
+#[test]
+fn test_memecoin_owner_deposit() {
+    let mut template_test = TemplateTest::new(vec!["."]);
+    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
+
+    let deposited_amount = Amount::new(100);
+
+    let result = template_test.execute_expect_success(
+        Transaction::builder()
+            .call_method(
+                meme_coin_result.meme_coin_component,
+                "deposit",
+                args![deposited_amount.clone()],
+            )
+            .call_method(meme_coin_result.meme_coin_component, "balance", args![])
+            .build_and_seal(&meme_coin_result.admin_account_secret),
+        vec![meme_coin_result.admin_account_proof],
+    );
+    assert!(result.finalize.result.is_accept());
+
+    let memecoin_balance = result.finalize.execution_results[1]
+        .decode::<Amount>()
+        .unwrap();
+    assert_eq!(
+        memecoin_balance,
+        meme_coin_result.initial_supply.add(deposited_amount)
     );
 }
