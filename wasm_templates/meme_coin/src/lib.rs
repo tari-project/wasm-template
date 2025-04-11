@@ -9,7 +9,7 @@ pub mod {{ project-name | snake_case }} {
     }
 
     impl {{ project-name | upper_camel_case }} {
-        pub fn mint(
+        pub fn create(
             initial_supply: Amount,
             token_symbol: String,
             token_image_url: Option<String>,
@@ -45,7 +45,7 @@ pub mod {{ project-name | snake_case }} {
             self.token_vault.withdraw(amount)
         }
 
-        pub fn deposit(&mut self, amount: Amount) {
+        pub fn mint(&mut self, amount: Amount) {
             let bucket =
                 ResourceManager::get(self.token_vault.resource_address()).mint_fungible(amount);
             self.token_vault.deposit(bucket);

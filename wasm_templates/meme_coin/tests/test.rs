@@ -25,7 +25,7 @@ fn create_meme_coin(test: &mut TemplateTest, name: &str) -> CreateMemeCoinResult
         Transaction::builder()
             .call_function(
                 memecoin_template_addr,
-                "mint",
+                "create",
                 args![
                     initial_supply,
                     name.to_string(),
@@ -175,7 +175,7 @@ fn test_memecoin_owner_burn() {
 }
 
 #[test]
-fn test_memecoin_owner_deposit() {
+fn test_memecoin_owner_mint() {
     let mut template_test = TemplateTest::new(vec!["."]);
     let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
 
@@ -185,7 +185,7 @@ fn test_memecoin_owner_deposit() {
         Transaction::builder()
             .call_method(
                 meme_coin_result.meme_coin_component,
-                "deposit",
+                "mint",
                 args![deposited_amount.clone()],
             )
             .call_method(meme_coin_result.meme_coin_component, "balance", args![])
