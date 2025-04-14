@@ -16,6 +16,7 @@ pub mod {{ project-name | snake_case }} {
         pub fn new() -> Component<Self> {
             let bucket = ResourceBuilder::non_fungible()
                 .with_token_symbol("{{ project-name | shouty_kebab_case }}")
+                .with_owner_rule(OwnerRule::OwnedBySigner)
                 .initial_supply((1..=100).map(NonFungibleId::from_u32));
 
             Component::new(Self {
@@ -78,6 +79,10 @@ pub mod {{ project-name | snake_case }} {
 
         pub fn vault_balance(&self) -> Amount {
             self.vault.balance()
+        }
+
+        pub fn set_access_rules(&mut self, access_rules: ResourceAccessRules) {
+            ResourceManager::get(self.token_vault.resource_address()).set_access_rules(access_rules)
         }
     }
 }
