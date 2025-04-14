@@ -82,7 +82,7 @@ pub mod {{ project-name | snake_case }} {
         }
 
         pub fn set_access_rules(&mut self, access_rules: ResourceAccessRules) {
-            ResourceManager::get(self.token_vault.resource_address()).set_access_rules(access_rules)
+            ResourceManager::get(self.vault.resource_address()).set_access_rules(access_rules)
         }
     }
 }
