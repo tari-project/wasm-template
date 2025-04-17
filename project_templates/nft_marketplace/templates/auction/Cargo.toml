@@ -19,3 +19,9 @@ strip = "debuginfo" # Strip debug info.
 
 [lib]
 crate-type = ["cdylib", "lib"]
+
+[dev-dependencies]
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-dan.git", branch = "development" }
+tari_transaction = { git = "https://github.com/tari-project/tari-dan.git", branch = "development" }
+tari_bor = { git = "https://github.com/tari-project/tari-dan.git", branch = "development" }
+tari_engine_types = { git = "https://github.com/tari-project/tari-dan.git", branch = "development" }
