@@ -1,0 +1,5 @@
+name = "NFT Marketplace"
+description = "A starter **NFT Marketplace**"
+
+[extra]
+templates_dir = "templates"
