@@ -1,4 +1,3 @@
-[workspace]
 [package]
 name = "nft_marketplace_index"
 version = "0.1.0"
