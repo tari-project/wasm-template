@@ -20,7 +20,7 @@ fn ico(test: &mut TemplateTest) -> IcoCreateResult {
     let create_coin_result = test.execute_expect_success(
         Transaction::builder()
             .call_function(
-                test.get_template_address("Ico"),
+                test.get_template_address("{{ project-name | upper_camel_case }}Ico"),
                 "new",
                 args!["{{ project-name | shouty_kebab_case }}-ICO".to_string(), Amount::new(1_000_000_000), Amount::new(10)],
             )
