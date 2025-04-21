@@ -1,5 +1,5 @@
 [workspace]
-members = ["templates/auction", "templates/index"]
+members = ["templates/issuer", "templates/user_account"]
 resolver = "2"
 
 [profile.release]
