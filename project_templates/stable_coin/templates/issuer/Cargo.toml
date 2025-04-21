@@ -1,0 +1,19 @@
+[package]
+name = "issuer"
+version = "0.1.0"
+authors = ["ksrichard <bertok.richard.94@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+tari_template_lib = { git = "https://github.com/tari-project/tari-dan.git", branch = "development", package = "tari_template_lib" }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+stable_coin_common = { path = "../common" }
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dev-dependencies]
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-dan.git", branch = "development" }
+tari_transaction = { git = "https://github.com/tari-project/tari-dan.git", branch = "development" }
+tari_bor = { git = "https://github.com/tari-project/tari-dan.git", branch = "development" }
+
