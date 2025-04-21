@@ -23,7 +23,7 @@ mod {{ project-name | snake_case }}_ico {
 
             let admin_badge = ResourceBuilder::non_fungible()
                 .with_owner_rule(OwnerRule::OwnedBySigner)
-                .initial_supply(vec![NonFungibleId::from_u32(1)]);
+                .initial_supply(vec![NonFungibleId::random()]);
 
             let comp_access_rules = ComponentAccessRules::new()
                 .default(AccessRule::AllowAll)
