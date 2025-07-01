@@ -5,7 +5,7 @@ authors = ["{{authors}}"]
 edition = "2021"
 
 [dependencies]
-tari_template_lib = { git = "https://github.com/tari-project/tari-dan.git", branch = "development", package = "tari_template_lib" }
+tari_template_lib = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
 
 {% if in_cargo_workspace == "false" %}
 [profile.release]
@@ -20,5 +20,5 @@ strip = "debuginfo" # Strip debug info.
 crate-type = ["cdylib", "lib"]
 
 [dev-dependencies]
-tari_template_test_tooling = { git = "https://github.com/tari-project/tari-dan.git", branch = "development", package = "tari_template_test_tooling" }
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
 
