@@ -7,8 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tari_template_abi = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
-tari_template_lib = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
+tari_template_lib = "0.11"
 serde = { version = "1.0.143", default-features = false, features = ["derive", "alloc"] }
 
 {% if in_cargo_workspace == "false" %}
