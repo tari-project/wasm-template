@@ -3,6 +3,7 @@ use tari_template_lib::models::{
     Amount, ComponentAddress, Metadata, NonFungibleAddress, ResourceAddress,
 };
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
+use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::TemplateTest;
 use tari_transaction::{args, Transaction};
 
