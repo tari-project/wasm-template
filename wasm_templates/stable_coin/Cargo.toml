@@ -13,6 +13,7 @@ tari_bor = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.
 [dev-dependencies]
 tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.10.4" }
 tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.10.4" }
+tari_engine_types = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.10.4" }
 
 [profile.release]
 opt-level = 's'     # Optimize for size.

@@ -1,10 +1,12 @@
-use tari_template_lib::args;
+use tari_engine_types::ToByteType;
 use tari_template_lib::models::{
     Amount, ComponentAddress, Metadata, NonFungibleAddress, ResourceAddress,
 };
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::TemplateTest;
-use tari_transaction::Transaction;
+use tari_transaction::{args, Transaction};
+
+const TEMPLATE_MODULE_NAME: &str = "{{project-name | upper_camel_case}}";
 
 #[test]
 fn it_increases_and_decreases_supply() {
@@ -25,8 +27,7 @@ fn it_increases_and_decreases_supply() {
             .call_method(stable_coin_component, "increase_supply", args![123])
             .call_method(stable_coin_component, "total_supply", args![])
             .drop_all_proofs_in_workspace()
-            .sign(&admin_key)
-            .build(),
+            .build_and_seal(&admin_key),
         vec![admin_proof.clone()],
     );
 
@@ -43,8 +44,7 @@ fn it_increases_and_decreases_supply() {
             .call_method(stable_coin_component, "decrease_supply", args![Amount(456)])
             .call_method(stable_coin_component, "total_supply", args![])
             .drop_all_proofs_in_workspace()
-            .sign(&admin_key)
-            .build(),
+            .build_and_seal(&admin_key),
         vec![admin_proof],
     );
 
@@ -56,7 +56,7 @@ fn it_increases_and_decreases_supply() {
 }
 
 #[test]
-fn it_allows_users_to_transact() {
+fn it_prevents_unauthorised_users_from_transacting() {
     let TestSetup {
         mut test,
         stable_coin_component,
@@ -91,12 +91,77 @@ fn it_allows_users_to_transact() {
             .call_method(alice_account, "deposit", args![Workspace("badge")])
             .call_method(alice_account, "deposit", args![Workspace("funds")])
             .drop_all_proofs_in_workspace()
-            .sign(&admin_key)
-            .build(),
+            .build_and_seal(&admin_key),
         vec![admin_proof.clone()],
     );
 
     // Alice to Bob should fail (Bob is not allowed to transact)
+    let reason = test.execute_expect_failure(
+        Transaction::builder()
+            .create_proof(alice_account, user_badge_resource)
+            .put_last_instruction_output_on_workspace("proof")
+            .call_method(alice_account, "withdraw", args![token_resource, 456])
+            .put_last_instruction_output_on_workspace("funds")
+            .call_method(bob_account, "deposit", args![Workspace("funds")])
+            .call_method(bob_account, "balance", args![token_resource])
+            .drop_all_proofs_in_workspace()
+            .build_and_seal(&alice_key),
+        vec![alice_proof.clone()],
+    );
+
+    assert_reject_reason(reason, "This account does not have permission to deposit");
+}
+
+#[test]
+fn it_allows_users_to_transact() {
+    let TestSetup {
+        mut test,
+        stable_coin_component,
+        admin_proof,
+        admin_key,
+        admin_account,
+        admin_badge_resource,
+        user_badge_resource,
+        token_resource,
+        ..
+    } = setup();
+
+    let (alice_account, alice_proof, alice_key) = test.create_empty_account();
+    let (bob_account, _, _) = test.create_empty_account();
+
+    // Allow Alice to transact and provision funds in her account
+    test.execute_expect_success(
+        Transaction::builder()
+            // Auth
+            .create_proof(admin_account, admin_badge_resource)
+            .put_last_instruction_output_on_workspace("proof")
+            // Give alice and bob authorisation to transact using the stable coin resource
+            .call_method(
+                stable_coin_component,
+                "create_new_user",
+                args![1, alice_account],
+            )
+            .put_last_instruction_output_on_workspace("alice_badge")
+            .call_method(
+                stable_coin_component,
+                "create_new_user",
+                args![2, bob_account],
+            )
+            .put_last_instruction_output_on_workspace("bob_badge")
+            .call_method(alice_account, "deposit", args![Workspace("alice_badge")])
+            .call_method(bob_account, "deposit", args![Workspace("bob_badge")])
+            // Withdraw for new stable coin customer
+            .call_method(stable_coin_component, "withdraw", args![Amount(1234)])
+            .put_last_instruction_output_on_workspace("funds")
+            // Deposit badge and funds into Alice's account
+            .call_method(alice_account, "deposit", args![Workspace("funds")])
+            .drop_all_proofs_in_workspace()
+            .build_and_seal(&admin_key),
+        vec![admin_proof.clone()],
+    );
+
+
+    // Alice to Bob transact again
     let result = test.execute_expect_success(
         Transaction::builder()
             .create_proof(alice_account, user_badge_resource)
@@ -106,8 +171,7 @@ fn it_allows_users_to_transact() {
             .call_method(bob_account, "deposit", args![Workspace("funds")])
             .call_method(bob_account, "balance", args![token_resource])
             .drop_all_proofs_in_workspace()
-            .sign(&alice_key)
-            .build(),
+            .build_and_seal(&alice_key),
         vec![alice_proof.clone()],
     );
 
@@ -130,8 +194,8 @@ struct TestSetup {
 
 fn setup() -> TestSetup {
     let mut test = TemplateTest::new(["./"]);
-    let (admin_account, admin_proof, admin_key) = test.create_owned_account();
-    let template = test.get_template_address("TariStableCoin");
+    let (admin_account, admin_proof, admin_key) = test.create_funded_account();
+    let template = test.get_template_address(TEMPLATE_MODULE_NAME);
     let mut metadata = Metadata::new();
     metadata
         .insert("provider_name", "Stable coinz 4 U")
@@ -139,17 +203,18 @@ fn setup() -> TestSetup {
         .insert("issuing_authority", "Bank of Silly Walks")
         .insert("issued_at", "2023-01-01");
 
+    let view_key = test.public_key().to_byte_type();
+
     let result = test.execute_expect_success(
         Transaction::builder()
             .call_function(
                 template,
                 "instantiate",
-                args![1_000_000_000, "SC4U", metadata, true],
+                args![1_000_000_000, "SC4U", metadata, view_key, true],
             )
             .put_last_instruction_output_on_workspace("admin_badge")
             .call_method(admin_account, "deposit", args![Workspace("admin_badge")])
-            .sign(&admin_key)
-            .build(),
+            .build_and_seal(&admin_key),
         vec![admin_proof.clone()],
     );
 
