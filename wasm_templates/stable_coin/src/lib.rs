@@ -33,7 +33,6 @@ mod template {
     use crate::user_data::Account;
     use crate::wrapped_exchange_token::{ExchangeFee, WrappedExchangeToken};
     use std::collections::BTreeSet;
-    use tari_template_lib::args::LogLevel;
     use tari_template_lib::engine;
 
     const DEFAULT_WRAPPED_TOKEN_EXCHANGE_FEE: ExchangeFee = ExchangeFee::Fixed(Amount::new(5));
@@ -143,21 +142,19 @@ mod template {
             admin_badge
         }
 
+
         pub fn authorize_user_deposit(&self, action: ResourceAuthAction, caller: AuthHookCaller) {
             match action {
                 ResourceAuthAction::Deposit => {
                     let Some(component_state) = caller.component_state() else {
                         panic!("deposit not permitted from static template function")
                     };
-                    engine().emit_log(
-                        LogLevel::Info,
-                        format!(
-                            "Authorizing deposit for user with component {}",
-                            caller.component().unwrap()
-                        ),
+                    info!(
+                        "Authorizing deposit for user with component {}",
+                        caller.component().unwrap()
                     );
                     let user_account = tari_bor::from_value::<Account>(component_state).unwrap();
-                    let vault = user_account.get_vault(&self.user_auth_resource);
+                    let vault = user_account.get_vault(&self.user_auth_resource).expect("This account does not have permission to deposit");
 
                     // User must own a badge of this user auth resource. The badge may be locked when sending to self.
                     if vault.balance().is_zero() && vault.locked_balance().is_zero() {
@@ -348,7 +345,7 @@ mod template {
             let component_manager = engine().component_manager(user.user_account);
             let account = component_manager.get_state::<Account>();
 
-            let vault = account.get_vault(&self.token_vault.resource_address());
+            let vault = account.get_vault(&self.token_vault.resource_address()).expect("vault not found for resource");
             let vault_id = vault.vault_id();
             let num_commitments = commitments.len();
 

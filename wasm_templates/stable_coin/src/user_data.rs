@@ -55,10 +55,10 @@ pub struct Account {
     pub vaults: BTreeMap<ResourceAddress, Vault>,
 }
 
+
 impl Account {
-    pub fn get_vault(&self, address: &ResourceAddress) -> &Vault {
+    pub fn get_vault(&self, address: &ResourceAddress) -> Option<&Vault> {
         self.vaults
             .get(address)
-            .unwrap_or_else(|| panic!("Vault not found for address: {}", address))
     }
 }
