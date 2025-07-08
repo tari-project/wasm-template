@@ -5,7 +5,7 @@ authors = ["{{authors}}"]
 edition = "2021"
 
 [dependencies]
-tari_template_lib = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
+tari_template_lib = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
 
 {% if in_cargo_workspace == "false" %}
 [profile.release]
@@ -21,6 +21,6 @@ crate-type = ["cdylib", "lib"]
 
 [dev-dependencies]
 log = "*"
-tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
-tari_engine_types = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
-tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
+tari_engine_types = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
+tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }

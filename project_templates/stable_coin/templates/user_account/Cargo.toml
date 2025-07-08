@@ -5,7 +5,7 @@ authors = ["ksrichard <bertok.richard.94@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-tari_template_lib = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
+tari_template_lib = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
 stable_coin_common = { path = "../common" }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 
@@ -14,8 +14,8 @@ serde = { version = "1.0", default-features = false, features = ["derive"] }
 crate-type = ["cdylib", "lib"]
 
 [dev-dependencies]
-tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
-tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
-tari_dan_common_types = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
-tari_bor = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
+tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
+tari_dan_common_types = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
+tari_bor = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
 
