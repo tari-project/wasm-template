@@ -1,5 +1,0 @@
-name = "Stable Coin"
-description = "A starter **Stable Coin** implementation"
-
-[extra]
-templates_dir = "templates"

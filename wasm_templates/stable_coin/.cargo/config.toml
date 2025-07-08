@@ -1,0 +1,8 @@
+#[build]
+#target = "wasm32-unknown-unknown"
+
+[build]
+target-dir = "target"
+
+[alias]
+build-wasm = "build --target=wasm32-unknown-unknown"
