@@ -1,25 +1,3 @@
-//   Copyright 2023. The Tari Project
-//
-//   Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-//   following conditions are met:
-//
-//   1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-//   disclaimer.
-//
-//   2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-//   following disclaimer in the documentation and/or other materials provided with the distribution.
-//
-//   3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
-//   products derived from this software without specific prior written permission.
-//
-//   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-//   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-//   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-//   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-//   SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-//   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-//   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 mod user_data;
 mod wrapped_exchange_token;
 
@@ -30,12 +8,11 @@ use tari_template_lib::prelude::*;
 #[template]
 mod template {
     use super::*;
-    use crate::user_data::Account;
     use crate::wrapped_exchange_token::{ExchangeFee, WrappedExchangeToken};
     use std::collections::BTreeSet;
     use tari_template_lib::engine;
 
-    const DEFAULT_WRAPPED_TOKEN_EXCHANGE_FEE: ExchangeFee = ExchangeFee::Fixed(Amount::new(5));
+    const DEFAULT_WRAPPED_TOKEN_EXCHANGE_FEE: ExchangeFee = ExchangeFee::Fixed(amount!("5"));
 
     pub struct {{ project-name | upper_camel_case }} {
         token_vault: Vault,
@@ -43,10 +20,11 @@ mod template {
         admin_auth_resource: ResourceAddress,
         blacklisted_users: Vault,
         wrapped_token: Option<WrappedExchangeToken>,
+        total_supply: Amount,
     }
 
     impl {{ project-name | upper_camel_case }} {
-        /// Instantiates a new stable coin component, returning the component and an bucket containing an admin badge
+        /// Instantiates a new stable coin component, returning a bucket containing an admin badge
         pub fn instantiate(
             initial_token_supply: Amount,
             token_symbol: String,
@@ -132,6 +110,7 @@ mod template {
                 admin_auth_resource: admin_badge.resource_address(),
                 blacklisted_users: Vault::new_empty(user_auth_resource),
                 wrapped_token,
+                total_supply: initial_token_supply,
             })
             .with_address_allocation(component_alloc)
             .with_access_rules(component_access_rules)
@@ -141,7 +120,6 @@ mod template {
 
             admin_badge
         }
-
 
         pub fn authorize_user_deposit(&self, action: ResourceAuthAction, caller: AuthHookCaller) {
             match action {
@@ -153,8 +131,11 @@ mod template {
                         "Authorizing deposit for user with component {}",
                         caller.component().unwrap()
                     );
-                    let user_account = tari_bor::from_value::<Account>(component_state).unwrap();
-                    let vault = user_account.get_vault(&self.user_auth_resource).expect("This account does not have permission to deposit");
+                    let user_account =
+                        Account::from_value(component_state).expect("not called from an account");
+                    let vault = user_account
+                        .get_vault_by_resource(&self.user_auth_resource)
+                        .expect("This account does not have permission to deposit");
 
                     // User must own a badge of this user auth resource. The badge may be locked when sending to self.
                     if vault.balance().is_zero() && vault.locked_balance().is_zero() {
@@ -172,6 +153,7 @@ mod template {
             let proof = ConfidentialOutputStatement::mint_revealed(amount);
             let new_tokens = self.token_vault_manager().mint_confidential(proof);
             self.token_vault.deposit(new_tokens);
+            self.total_supply += amount;
 
             if let Some(ref mut wrapped_token) = self.wrapped_token {
                 let new_tokens =
@@ -188,6 +170,7 @@ mod template {
 
             let tokens = self.token_vault.withdraw_confidential(proof);
             tokens.burn();
+            self.total_supply -= amount;
 
             if let Some(ref mut wrapped_token) = self.wrapped_token {
                 let wrapped_tokens = wrapped_token.vault_mut().withdraw(amount);
@@ -201,7 +184,7 @@ mod template {
         }
 
         pub fn total_supply(&self) -> Amount {
-            self.token_vault_manager().total_supply()
+            self.total_supply
         }
 
         pub fn withdraw(&mut self, amount: Amount) -> Bucket {
@@ -345,7 +328,9 @@ mod template {
             let component_manager = engine().component_manager(user.user_account);
             let account = component_manager.get_state::<Account>();
 
-            let vault = account.get_vault(&self.token_vault.resource_address()).expect("vault not found for resource");
+            let vault = account
+                .get_vault_by_resource(&self.token_vault.resource_address())
+                .expect("User account does not have a stable coin vault");
             let vault_id = vault.vault_id();
             let num_commitments = commitments.len();
 
@@ -383,7 +368,7 @@ mod template {
             user_account: ComponentAddress,
         ) -> Bucket {
             // TODO: configurable?
-            const DEFAULT_EXCHANGE_LIMIT: Amount = Amount::new(1_000);
+            const DEFAULT_EXCHANGE_LIMIT: Amount = amount!("1000");
 
             let badge = self.user_badge_manager().mint_non_fungible(
                 user_id.into(),

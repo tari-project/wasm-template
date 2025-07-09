@@ -4,8 +4,13 @@ version = "0.1.0"
 authors = ["{{authors}}"]
 edition = "2021"
 
+
 [dependencies]
-tari_template_lib = "0.11"
+tari_template_lib = "0.12"
+
+[dev-dependencies]
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.11.0" }
+
 
 {% if in_cargo_workspace == "false" %}
 [profile.release]
@@ -18,7 +23,3 @@ strip = "debuginfo" # Strip debug info.
 
 [lib]
 crate-type = ["cdylib", "lib"]
-
-[dev-dependencies]
-tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
-

@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tari_template_lib = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.10.4" }
+#tari_template_lib = "0.12"
+tari_template_lib = {path = "../../../../dan/crates/template_lib"}
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 
 {% if in_cargo_workspace == "false" %}

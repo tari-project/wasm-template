@@ -1,7 +1,8 @@
 // Copyright 2024 The Tari Project
 // SPDX-License-Identifier: BSD-3-Clause
 
-use tari_template_lib::models::{Amount, ResourceAddress, Vault};
+use tari_template_lib::models::{ResourceAddress, Vault};
+use tari_template_lib::types::Amount;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum ExchangeFee {
@@ -15,9 +16,7 @@ impl ExchangeFee {
             ExchangeFee::Fixed(fee) => *fee,
             ExchangeFee::Percentage(percentage) => {
                 let inv_perc = 100 / *percentage;
-                div_rounded(amount.as_u64_checked().unwrap(), inv_perc)
-                    .try_into()
-                    .unwrap()
+                div_rounded(amount, inv_perc.into()).try_into().unwrap()
             }
         }
     }
@@ -47,15 +46,17 @@ impl WrappedExchangeToken {
     }
 }
 
-fn div_rounded(v: u64, p: u64) -> u64 {
+fn div_rounded<A: Into<Amount>>(v: A, p: A) -> Amount {
+    let v = v.into();
+    let p = p.into();
     // f and b are the division to 3 decimals
-    let f = (v * 1000) * p / 100;
-    let b = v * p / 100;
-    let c = f - (b * 1000);
+    let f = (v * Amount::ONE_THOUSAND) * p / Amount::ONE_HUNDRED;
+    let b = v * p / Amount::ONE_HUNDRED;
+    let c = f - (b * Amount::ONE_THOUSAND);
 
     // If the decimal is greater or equal to 0.5, we round up
     if c >= 500 {
-        (f / 1000) + 1
+        (f / Amount::ONE_THOUSAND) + Amount::ONE
     } else {
         b
     }

@@ -27,9 +27,7 @@ mod {{ project-name | snake_case }}_ico {
 
             let comp_access_rules = ComponentAccessRules::new()
                 .default(AccessRule::AllowAll)
-                .add_method_rule("withdraw", AccessRule::Restricted(Require(RequireRule::Require(
-                    RuleRequirement::Resource(admin_badge.resource_address())
-                ))));
+                .add_method_rule("withdraw", rule!(resource(admin_badge.resource_address())));
 
             (
                 Component::new(Self {
@@ -46,10 +44,10 @@ mod {{ project-name | snake_case }}_ico {
 
         pub fn buy(&mut self, xtr_coins: Bucket) -> Bucket {
             assert_eq!(xtr_coins.resource_address(), XTR, "You must pay with XTR!");
-            if xtr_coins.amount().lt(&self.token_price) {
+            if xtr_coins.amount() < self.token_price {
                 panic!("Insufficient funds! You need more XTR to buy ICOs.");
             }
-            let ico_tokens_count = xtr_coins.amount().checked_div(&self.token_price).expect("Invalid XTR amount!");
+            let ico_tokens_count = xtr_coins.amount() / self.token_price;
             self.reward_coins.deposit(xtr_coins);
             self.ico_tokens.withdraw(ico_tokens_count)
         }

@@ -19,7 +19,7 @@ pub mod {{ project-name | snake_case }} {
                 .create()
         }
 
-        pub fn vault_address(&self) -> ResourceAddress {
+        pub fn resource_address(&self) -> ResourceAddress {
             self.vault.resource_address()
         }
 

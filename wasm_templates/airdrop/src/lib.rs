@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use tari_template_lib::prelude::*;
 
 #[template]
@@ -6,9 +6,9 @@ pub mod {{ project-name | snake_case }} {
     use super::*;
 
     pub struct {{ project-name | upper_camel_case }} {
-        allow_list: HashSet<ComponentAddress>,
+        allow_list: BTreeSet<ComponentAddress>,
         is_airdrop_open: bool,
-        claimed_count: u32,
+        claimed_count: u128,
         vault: Vault,
     }
 
@@ -20,7 +20,7 @@ pub mod {{ project-name | snake_case }} {
                 .initial_supply((1..=100).map(NonFungibleId::from_u32));
 
             Component::new(Self {
-                allow_list: HashSet::new(),
+                allow_list: BTreeSet::new(),
                 is_airdrop_open: false,
                 claimed_count: 0,
                 vault: Vault::from_bucket(bucket),
@@ -54,7 +54,7 @@ pub mod {{ project-name | snake_case }} {
             );
 
             self.claimed_count += 1;
-            self.vault.withdraw(Amount(1))
+            self.vault.withdraw(1)
         }
 
         pub fn claim_specific(&mut self, address: ComponentAddress, id: NonFungibleId) -> Bucket {
@@ -73,7 +73,7 @@ pub mod {{ project-name | snake_case }} {
             ResourceManager::get(self.vault.resource_address()).total_supply()
         }
 
-        pub fn num_claimed(&self) -> u32 {
+        pub fn num_claimed(&self) -> u128 {
             self.claimed_count
         }
 

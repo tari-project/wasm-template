@@ -1,4 +1,4 @@
-use tari_template_lib::args;
+use tari_template_test_tooling::transaction::{args, Transaction};
 use tari_template_lib::models::{Bucket, ComponentAddress, NonFungibleAddress, ResourceAddress};
 use tari_template_lib::prelude::Amount;
 use tari_template_lib::prelude::Metadata;
@@ -6,7 +6,6 @@ use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::SubstateType;
 use tari_template_test_tooling::TemplateTest;
-use tari_transaction::Transaction;
 
 use tari_engine_types::virtual_substate::{VirtualSubstate, VirtualSubstateId};
 
@@ -41,7 +40,7 @@ fn auction_period_ends_with_winning_bid() {
     let bid1 = BidRequest {
         auction: auction_component,
         bidder: bidder1.clone(),
-        bid: Amount(100),
+        bid: Amount::from(100),
     };
     bid(&mut test, &bid1);
     let bidder1_balance = get_account_tari_balance(&mut test, &bidder1);
@@ -51,7 +50,7 @@ fn auction_period_ends_with_winning_bid() {
     let bid2 = BidRequest {
         auction: auction_component,
         bidder: bidder2.clone(),
-        bid: Amount(200),
+        bid: Amount::from(200),
     };
     bid(&mut test, &bid2);
 
@@ -98,7 +97,7 @@ fn auction_period_ends_with_no_winning_bid() {
     // the NFT is no longer in the seller's account
     let seller_nft_balance =
         get_account_balance(&mut test, &seller, &seller_nft_address.resource_address());
-    assert_eq!(seller_nft_balance, Amount(0));
+    assert_eq!(seller_nft_balance, 0);
 
     // advance the epoch so the auction period expires
     set_epoch(&mut test, auction.epoch_period + 1);
@@ -113,7 +112,7 @@ fn auction_period_ends_with_no_winning_bid() {
     // the nft has been deposited into the seller again
     let seller_nft_balance =
         get_account_balance(&mut test, &seller, &seller_nft_address.resource_address());
-    assert_eq!(seller_nft_balance, Amount(1));
+    assert_eq!(seller_nft_balance, 1);
 }
 
 #[test]
@@ -127,7 +126,7 @@ fn auction_finishes_by_buying_price_bid() {
     } = setup();
 
     // create an auction for the NFT
-    let buy_price = Amount(100);
+    let buy_price = Amount::from(100);
     let auction = AuctionRequest {
         marketplace: auction_index_component,
         seller: seller.clone(),
@@ -150,7 +149,7 @@ fn auction_finishes_by_buying_price_bid() {
     };
     bid(&mut test, &bid1);
 
-    // Notice that we DON'T advace the epoch period
+    // Notice that we DON'T advance the epoch period
     // so the Auction has not expired
 
     // the bidder received the NFT, because he paid the buy price
@@ -186,7 +185,7 @@ fn auction_cancelled_by_seller() {
     let bid1 = BidRequest {
         auction: auction_component,
         bidder: bidder1.clone(),
-        bid: Amount(100),
+        bid: Amount::from(100),
     };
     bid(&mut test, &bid1);
     let bidder1_balance = get_account_tari_balance(&mut test, &bidder1);
@@ -205,7 +204,7 @@ fn auction_cancelled_by_seller() {
     // the nft has been deposited into the seller again
     let seller_nft_balance =
         get_account_balance(&mut test, &seller, &seller_nft_address.resource_address());
-    assert_eq!(seller_nft_balance, Amount(1));
+    assert_eq!(seller_nft_balance, 1);
 
     // the existing bid has been refunded
     let bidder1_balance_after_cancel = get_account_tari_balance(&mut test, &bidder1);
@@ -470,8 +469,8 @@ fn it_rejects_invalid_auction_finish() {
         ..
     } = setup();
     // let's publish a valid auction
-    let min_price = Amount(100);
-    let buy_price = Amount(500);
+    let min_price = Amount::from(100);
+    let buy_price = Amount::from(500);
     let auction_period = 10;
     let auction = AuctionRequest {
         marketplace: auction_index_component,

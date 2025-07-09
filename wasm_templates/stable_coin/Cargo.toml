@@ -6,14 +6,14 @@ edition = "2021"
 authors = ["{{authors}}"]
 
 [dependencies]
-tari_template_lib = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.10.4" }
+tari_template_lib = "0.12"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
-tari_bor = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.10.4" }
+tari_bor = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.11.0" }
 
 [dev-dependencies]
-tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.10.4" }
-tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.10.4" }
-tari_engine_types = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.10.4" }
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.11.0" }
+tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.11.0" }
+tari_engine_types = { git = "https://github.com/tari-project/tari-ootle.git",  tag = "v0.11.0" }
 
 [profile.release]
 opt-level = 's'     # Optimize for size.

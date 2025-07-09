@@ -1,9 +1,9 @@
 // Copyright 2024 The Tari Project
 // SPDX-License-Identifier: BSD-3-Clause
 
-use std::collections::BTreeMap;
 use std::fmt::Display;
-use tari_template_lib::models::{Amount, ComponentAddress, NonFungibleId, ResourceAddress, Vault};
+use tari_template_lib::models::{ComponentAddress, NonFungibleId};
+use tari_template_lib::types::Amount;
 
 #[derive(Clone, Debug, Copy, serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
@@ -47,18 +47,5 @@ impl Default for UserMutableData {
             is_blacklisted: false,
             wrapped_exchange_limit: 1000.into(),
         }
-    }
-}
-
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct Account {
-    pub vaults: BTreeMap<ResourceAddress, Vault>,
-}
-
-
-impl Account {
-    pub fn get_vault(&self, address: &ResourceAddress) -> Option<&Vault> {
-        self.vaults
-            .get(address)
     }
 }
