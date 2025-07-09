@@ -1,27 +1,4 @@
-//   Copyright 2024. The Tari Project
-//
-//   Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-//   following conditions are met:
-//
-//   1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-//   disclaimer.
-//
-//   2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-//   following disclaimer in the documentation and/or other materials provided with the distribution.
-//
-//   3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
-//   products derived from this software without specific prior written permission.
-//
-//   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-//   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-//   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-//   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-//   SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-//   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-//   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 use tari_template_lib::prelude::*;
-use tari_template_lib::Hash;
 
 /// TODO: create constant in template_lib for account template address (and other builtin templates)
 pub const ACCOUNT_TEMPLATE_ADDRESS: Hash = Hash::from_array([0u8; 32]);
@@ -87,7 +64,7 @@ mod nft_marketplace {
             );
 
             assert!(
-                nft_bucket.amount() == Amount(1),
+                nft_bucket.amount() == 1,
                 "Can only start an auction of a single NFT"
             );
 
@@ -153,7 +130,7 @@ mod nft_marketplace {
                 let previous_bidder_account = ComponentManager::get(highest_bid.bidder_account);
                 let refund_bucket = highest_bid.vault.withdraw_all();
                 // TODO: improve call method generics when there is no return value
-                previous_bidder_account.call::<_, ()>("deposit".to_string(), args![refund_bucket]);
+                previous_bidder_account.call::<_, ()>("deposit".to_string(), call_args![refund_bucket]);
 
                 // update the highest bidder in the auction
                 highest_bid.bidder_account = bidder_account_address;
@@ -210,7 +187,7 @@ mod nft_marketplace {
             if let Some(highest_bid) = &mut self.highest_bid {
                 let bidder_account = ComponentManager::get(highest_bid.bidder_account);
                 let refund_bucket = highest_bid.vault.withdraw_all();
-                bidder_account.call::<_, ()>("deposit".to_string(), args![refund_bucket]);
+                bidder_account.call::<_, ()>("deposit".to_string(), call_args![refund_bucket]);
                 // TODO: removing the bid ends up in a OrphanedSubstate error in the
                 //       but we need to mark that the auction is finished somehow to prevent new bids
                 // self.highest_bid = None;
@@ -222,7 +199,7 @@ mod nft_marketplace {
             // send the NFT back to the seller
             let seller_account = ComponentManager::get(self.seller_address);
             let nft_bucket = self.vault.withdraw_all();
-            seller_account.call::<_, ()>("deposit".to_string(), args![nft_bucket]);
+            seller_account.call::<_, ()>("deposit".to_string(), call_args![nft_bucket]);
         }
 
         fn assert_component_is_account(component_address: ComponentAddress) {
@@ -241,14 +218,14 @@ mod nft_marketplace {
             if let Some(highest_bid) = &mut self.highest_bid {
                 // deposit the nft to the bidder
                 let bidder_account = ComponentManager::get(highest_bid.bidder_account);
-                bidder_account.call::<_, ()>("deposit".to_string(), args![nft_bucket]);
+                bidder_account.call::<_, ()>("deposit".to_string(), call_args![nft_bucket]);
 
                 // deposit the funds to the seller
                 let payment = highest_bid.vault.withdraw_all();
-                seller_account.call::<_, ()>("deposit".to_string(), args![payment]);
+                seller_account.call::<_, ()>("deposit".to_string(), call_args![payment]);
             } else {
                 // no bidders in the auction, so just return the NFT to the seller
-                seller_account.call::<_, ()>("deposit".to_string(), args![nft_bucket]);
+                seller_account.call::<_, ()>("deposit".to_string(), call_args![nft_bucket]);
             }
 
             // TODO: burn the seller badge to avoid it being used again (should we recall it first?)

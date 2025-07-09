@@ -1,25 +1,25 @@
-use tari_template_lib::args;
-use tari_template_lib::models::ComponentAddress;
-use tari_template_test_tooling::TemplateTest;
+use tari_template_test_tooling::{TemplateTest, transaction::{args, Transaction}};
 
 #[test]
-fn test_increment() {
-    let mut template_test = TemplateTest::new(["."]);
-    let component_address: ComponentAddress =
-        template_test.call_function("{{ project-name | upper_camel_case }}", "new", args![], vec![]);
-    let proof = template_test.get_test_proof();
-    let value: u32 =
-        template_test.call_method(component_address, "value", args![], vec![proof.clone()]);
+fn it_works() {
+    let mut test = TemplateTest::new(["."]);
 
-    assert_eq!(value, 0);
+    let counter_template = test.get_template_address("{{ project-name | upper_camel_case }}");
 
-    template_test.call_method::<()>(component_address, "increase", args![], vec![proof.clone()]);
-    template_test.call_method::<()>(
-        component_address,
-        "increase_by",
-        args![100],
-        vec![proof.clone()],
+    let result = test.execute_expect_success(
+        Transaction::builder()
+            .allocate_component_address("addr")
+            .call_function(counter_template, "with_address", args![Workspace("addr")])
+            .call_method("addr", "value", args![])
+            .call_method("addr", "increase", args![])
+            .call_method("addr", "increase_by", args![100])
+            .call_method("addr", "value", args![])
+            .build_and_seal(test.secret_key()),
+        vec![test.owner_proof()]
     );
-    let value: u32 = template_test.call_method(component_address, "value", args![], vec![proof]);
-    assert_eq!(value, 101);
+
+    let v =     result.finalize.execution_results[2].decode::<u32>().unwrap();
+    assert_eq!(v, 0);
+    let v =     result.finalize.execution_results[5].decode::<u32>().unwrap();
+    assert_eq!(v, 101);
 }

@@ -1,7 +1,6 @@
 use tari_engine_types::ToByteType;
-use tari_template_lib::models::{
-    Amount, ComponentAddress, Metadata, NonFungibleAddress, ResourceAddress,
-};
+use tari_template_lib::models::{ComponentAddress, Metadata, NonFungibleAddress, ResourceAddress};
+use tari_template_lib::types::Amount;
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::TemplateTest;
@@ -36,7 +35,7 @@ fn it_increases_and_decreases_supply() {
         .decode::<Amount>()
         .unwrap();
 
-    assert_eq!(total_supply, Amount(1_000_000_123));
+    assert_eq!(total_supply, 1_000_000_123);
 
     let result = test.execute_expect_success(
         Transaction::builder()
@@ -53,7 +52,7 @@ fn it_increases_and_decreases_supply() {
         .decode::<Amount>()
         .unwrap();
 
-    assert_eq!(total_supply, Amount(1_000_000_123 - 456));
+    assert_eq!(total_supply, 1_000_000_123 - 456);
 }
 
 #[test]
@@ -161,7 +160,6 @@ fn it_allows_users_to_transact() {
         vec![admin_proof.clone()],
     );
 
-
     // Alice to Bob transact again
     let result = test.execute_expect_success(
         Transaction::builder()
@@ -179,7 +177,7 @@ fn it_allows_users_to_transact() {
     let bob_balance = result.finalize.execution_results[5]
         .decode::<Amount>()
         .unwrap();
-    assert_eq!(bob_balance, Amount(456));
+    assert_eq!(bob_balance, 456);
 }
 
 struct TestSetup {

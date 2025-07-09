@@ -1,12 +1,10 @@
-use std::ops::Add;
-use tari_engine_types::commit_result::RejectReason;
-use tari_template_lib::args;
-use tari_template_lib::constants::XTR;
-use tari_template_lib::models::{Amount, ComponentAddress, NonFungibleAddress};
-use tari_template_lib::prelude::Bucket;
+use tari_template_test_tooling::engine_types::commit_result::RejectReason;
+use tari_template_lib::models::{Bucket, ComponentAddress, NonFungibleAddress};
+use tari_template_lib::types::Amount;
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
+use tari_template_test_tooling::transaction::{args, Transaction};
 use tari_template_test_tooling::TemplateTest;
-use tari_transaction::Transaction;
+use tari_template_lib::constants::XTR;
 
 struct IcoCreateResult {
     pub account_address: ComponentAddress,
@@ -22,7 +20,7 @@ fn ico(test: &mut TemplateTest) -> IcoCreateResult {
             .call_function(
                 test.get_template_address("{{ project-name | upper_camel_case }}Ico"),
                 "new",
-                args!["{{ project-name | shouty_kebab_case }}-ICO".to_string(), Amount::new(1_000_000_000), Amount::new(10)],
+                args!["{{ project-name | shouty_kebab_case }}-ICO".to_string(), 1_000_000_000, 10],
             )
             .put_last_instruction_output_on_workspace("ret")
             .call_method(
@@ -76,7 +74,7 @@ fn test_buy_success() {
             .call_method(
                 account_component,
                 "withdraw",
-                args![XTR, Amount::new(100)],
+                args![XTR, 100],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -117,12 +115,12 @@ fn test_buy_success() {
     let ico_final_xtr_balance = result.finalize.execution_results[9]
         .decode::<Amount>()
         .unwrap();
-    assert_eq!(ico_final_xtr_balance, Amount::new(100));
+    assert_eq!(ico_final_xtr_balance, 100);
 
     let account_final_ico_balance = result.finalize.execution_results[10]
         .decode::<Amount>()
         .unwrap();
-    assert_eq!(account_final_ico_balance, Amount::new(10));
+    assert_eq!(account_final_ico_balance, 10);
 }
 
 #[test]
@@ -155,7 +153,7 @@ fn test_buy_insufficient_funds() {
             .call_method(
                 account_component,
                 "withdraw",
-                args![XTR, Amount::new(5)],
+                args![XTR, Amount(5)],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -187,7 +185,7 @@ fn test_withdraw_access_denied() {
             .call_method(
                 account_component,
                 "withdraw",
-                args![XTR, Amount::new(100)],
+                args![XTR, Amount(100)],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -211,7 +209,7 @@ fn test_withdraw_access_denied() {
             .call_method(
                 ico_result.ico_address,
                 "withdraw",
-                args![Amount::new(100)],
+                args![Amount(100)],
             )
             .build_and_seal(&account_secret_key),
         vec![owner_proof.clone()],
@@ -240,7 +238,7 @@ fn test_owner_withdraw() {
             .call_method(
                 account_component,
                 "withdraw",
-                args![XTR, Amount::new(100)],
+                args![XTR, Amount(100)],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -269,7 +267,7 @@ fn test_owner_withdraw() {
             .call_method(
                 ico_result.ico_address,
                 "withdraw",
-                args![Amount::new(100)],
+                args![Amount(100)],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -294,5 +292,5 @@ fn test_owner_withdraw() {
         .decode::<Amount>()
         .unwrap();
 
-    assert_eq!(owner_initial_xtr_balance.add(100), owner_final_xtr_balance);
+    assert_eq!(owner_initial_xtr_balance, owner_final_xtr_balance - 100.into());
 }

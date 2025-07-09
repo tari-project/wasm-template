@@ -22,7 +22,7 @@
 use tari_template_lib::prelude::*;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct {{ project-name | upper_camel_case }} {
+struct NftData {
     pub brightness: u32,
 }
 
@@ -35,9 +35,10 @@ mod {{ project-name | snake_case }} {
     }
 
     impl {{ project-name | upper_camel_case }}Nft {
-        pub fn new() -> Self {
+        pub fn new() -> (Component<Self>, ResourceAddress) {
             let resource_address = ResourceBuilder::non_fungible()
                 .with_token_symbol("{{ project-name | shouty_kebab_case }}")
+                // TODO: specify stricter access rules as required
                 .with_access_rules(
                     ResourceAccessRules::new()
                         .mintable(AccessRule::AllowAll)
@@ -47,9 +48,11 @@ mod {{ project-name | snake_case }} {
                 )
                 .build();
 
-            Self {
+            let component = Component::new(Self {
                 resource_address
-            }
+            }).create();
+
+            (component, resource_address)
         }
 
         pub fn mint(&mut self) -> Bucket {
@@ -71,7 +74,7 @@ mod {{ project-name | snake_case }} {
 
             // Mint the NFT, this will fail if the token ID already exists
             let res_manager = ResourceManager::get(self.resource_address);
-            res_manager.mint_non_fungible(id.clone(), &immutable_data, &{{ project-name | upper_camel_case }} { brightness: 0 })
+            res_manager.mint_non_fungible(id.clone(), &immutable_data, &NftData { brightness: 0 })
         }
 
         pub fn total_supply(&self) -> Amount {
@@ -80,7 +83,7 @@ mod {{ project-name | snake_case }} {
 
         pub fn inc_brightness(&mut self, id: NonFungibleId, brightness: u32) {
             debug!(format!("Increase brightness on {} by {}", id, brightness));
-            self.with_{{ project-name | snake_case }}_mut(id, |data| {
+            self.with_data_mut(id, |data| {
                 data.brightness = data
                     .brightness
                     .checked_add(brightness)
@@ -88,10 +91,10 @@ mod {{ project-name | snake_case }} {
             });
         }
 
-        fn with_{{ project-name | snake_case }}_mut<F: FnOnce(&mut {{ project-name | upper_camel_case }})>(&self, id: NonFungibleId, f: F) {
+        fn with_data_mut<F: FnOnce(&mut NftData)>(&self, id: NonFungibleId, f: F) {
             let resource_manager = ResourceManager::get(self.resource_address);
             let mut nft = resource_manager.get_non_fungible(&id);
-            let mut data = nft.get_mutable_data::<{{ project-name | upper_camel_case }}>();
+            let mut data = nft.get_mutable_data::<NftData>();
             f(&mut data);
             nft.set_mutable_data(&data);
         }
@@ -108,7 +111,7 @@ mod {{ project-name | snake_case }} {
             );
             debug!(format!(
                 "Burning bucket {} containing {}",
-                bucket.id(),
+                bucket,
                 bucket.amount()
             ));
             // This is all that's required, typically the template would not need to include a burn function because a

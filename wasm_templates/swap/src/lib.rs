@@ -1,35 +1,13 @@
-//   Copyright 2023. The Tari Project
-//
-//   Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-//   following conditions are met:
-//
-//   1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-//   disclaimer.
-//
-//   2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-//   following disclaimer in the documentation and/or other materials provided with the distribution.
-//
-//   3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
-//   products derived from this software without specific prior written permission.
-//
-//   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-//   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-//   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-//   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-//   SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-//   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-//   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-use tari_template_abi::rust::collections::HashMap;
+use tari_template_abi::rust::collections::BTreeMap;
 use tari_template_lib::prelude::*;
 
 #[template]
-mod {{ project-name | snake_case }} {
+mod asd {
     use super::*;
 
     // Constant product AMM
     pub struct {{ project-name | upper_camel_case }}Pool {
-        pools: HashMap<ResourceAddress, Vault>,
+        pools: BTreeMap<ResourceAddress, Vault>,
         lp_resource: ResourceAddress,
         fee: u16,
     }
@@ -39,10 +17,7 @@ mod {{ project-name | snake_case }} {
         // the fees is represented as a per-mil quantity (e.g. "1" represents "0.1%")
         pub fn new(a_addr: ResourceAddress, b_addr: ResourceAddress, fee: u16) -> Self {
             // check that the the resource pair is correct
-            assert!(
-                a_addr != b_addr,
-                "The resources of the pair must be different"
-            );
+            assert_ne!(a_addr, b_addr, "The resources of the pair must be different");
             Self::check_resource_is_fungible(a_addr);
             Self::check_resource_is_fungible(b_addr);
 
@@ -51,7 +26,7 @@ mod {{ project-name | snake_case }} {
             assert!(valid_fee_range.contains(&fee), "Invalid fee {}", fee);
 
             // create the vaults to store the funds
-            let mut pools = HashMap::new();
+            let mut pools = BTreeMap::new();
             pools.insert(a_addr, Vault::new_empty(a_addr));
             pools.insert(b_addr, Vault::new_empty(b_addr));
 
@@ -66,7 +41,7 @@ mod {{ project-name | snake_case }} {
             }
         }
 
-        // swap A tokens for B tokens or viceversa
+        // swap A tokens for B tokens or vice versa
         pub fn swap(&mut self, input_bucket: Bucket, output_resource: ResourceAddress) -> Bucket {
             // check that the parameters are correct
             let input_resource = input_bucket.resource_address();
@@ -89,11 +64,9 @@ mod {{ project-name | snake_case }} {
             );
 
             // apply the fee to the input bucket
-            // so the user will get a lesser amout of tokens than the theoritical (for the gain of the LP holders)
-            let input_bucket_balance = input_bucket.amount().value();
-            let effective_input_balance =
-                input_bucket_balance - (input_bucket_balance * (self.fee as i64)) / 1000;
-            let effective_input_balance = Amount::new(effective_input_balance);
+            // so the user will get a lesser amount of tokens than the theoretical (for the gain of the LP holders)
+            let input_bucket_balance = input_bucket.amount();
+            let effective_input_balance = input_bucket_balance - (input_bucket_balance * self.fee.into()) / 1000.into();
 
             // recalculate the new vault balances for the swap
             // constant product AMM formula is "k = a * b"
@@ -142,22 +115,19 @@ mod {{ project-name | snake_case }} {
         }
 
         pub fn remove_liquidity(&mut self, lp_bucket: Bucket) -> (Bucket, Bucket) {
-            assert!(
-                lp_bucket.resource_address() == self.lp_resource,
-                "Invalid LP resource"
-            );
+            assert!(lp_bucket.resource_address() == self.lp_resource, "Invalid LP resource");
 
             // get the pool information
             let a_resource = self.get_a_resource();
-            let a_balance = self.get_pool_balance(a_resource).value() as f64;
+            let a_balance = self.get_pool_balance(a_resource);
             let b_resource = self.get_b_resource();
-            let b_balance = self.get_pool_balance(b_resource).value() as f64;
+            let b_balance = self.get_pool_balance(b_resource);
 
             // calculate the amount of tokens to take from each pool
-            let lp_ratio =
-                lp_bucket.amount().value() as f64 / self.lp_total_supply().value() as f64;
-            let a_amount = Amount::new((lp_ratio * a_balance).ceil() as i64);
-            let b_amount = Amount::new((lp_ratio * b_balance).ceil() as i64);
+            let decimals = Amount::from(1_000_000u64);
+            let lp_ratio = (lp_bucket.amount() * decimals) / (self.lp_total_supply() * decimals);
+            let a_amount = (lp_ratio.div_ceil(decimals)) * a_balance;
+            let b_amount = (lp_ratio.div_ceil(decimals)) * b_balance;
 
             // burn the LP tokens
             lp_bucket.burn();
@@ -176,8 +146,8 @@ mod {{ project-name | snake_case }} {
             *self.pools.keys().nth(1).unwrap()
         }
 
-        pub fn get_pool_balances(&self) -> HashMap<ResourceAddress, Amount> {
-            let mut balances = HashMap::new();
+        pub fn get_pool_balances(&self) -> BTreeMap<ResourceAddress, Amount> {
+            let mut balances = BTreeMap::new();
 
             for (resource, vault) in &self.pools {
                 balances.insert(resource.clone(), vault.balance());
@@ -198,7 +168,7 @@ mod {{ project-name | snake_case }} {
             let balance = self.get_pool_balance(resource);
 
             if balance == 0 {
-                Amount::new(1)
+                Amount::ONE
             } else {
                 amount / balance
             }
@@ -234,8 +204,9 @@ mod {{ project-name | snake_case }} {
         }
 
         fn check_resource_is_fungible(resource: ResourceAddress) {
-            assert!(
-                ResourceManager::get(resource).resource_type() == ResourceType::Fungible,
+            assert_eq!(
+                ResourceManager::get(resource).resource_type(),
+                ResourceType::Fungible,
                 "Resource {} is not fungible",
                 resource
             );

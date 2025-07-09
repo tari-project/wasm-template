@@ -28,6 +28,7 @@ pub mod {{ project-name | snake_case }} {
             Component::new(Self {
                 token_vault: Vault::from_bucket(coins),
             })
+                // This is the default OwnerRule so could be omitted
                 .with_owner_rule(OwnerRule::OwnedBySigner)
                 .create()
         }

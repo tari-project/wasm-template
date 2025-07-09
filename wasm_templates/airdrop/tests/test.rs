@@ -1,16 +1,14 @@
-use std::ops::Sub;
-use tari_engine_types::commit_result::RejectReason;
-use tari_template_lib::args;
+use tari_template_test_tooling::transaction::{Transaction, args};
+use tari_template_test_tooling::engine_types::commit_result::RejectReason;
 use tari_template_lib::models::NonFungibleAddress;
 use tari_template_lib::prelude::{Amount, Bucket, ComponentAddress};
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::TemplateTest;
-use tari_transaction::Transaction;
 
 struct AirdropResult {
-    pub account_address: ComponentAddress,
-    pub account_proof: NonFungibleAddress,
-    pub account_secret: RistrettoSecretKey,
+    account_address: ComponentAddress,
+    account_proof: NonFungibleAddress,
+    account_secret: RistrettoSecretKey,
     airdrop_address: ComponentAddress,
 }
 
@@ -41,12 +39,12 @@ fn airdrop(test: &mut TemplateTest) -> AirdropResult {
 
 #[test]
 fn test_airdrop_add_recipient_airdrop_already_started() {
-    let mut template_test = TemplateTest::new(vec!["."]);
-    let airdrop_result = airdrop(&mut template_test);
+    let mut test = TemplateTest::new(vec!["."]);
+    let airdrop_result = airdrop(&mut test);
 
-    let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
+    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
 
-    let result = template_test.execute_expect_failure(
+    let result = test.execute_expect_failure(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -66,12 +64,12 @@ fn test_airdrop_add_recipient_airdrop_already_started() {
 
 #[test]
 fn test_airdrop_add_recipient_airdrop_allow_list_full() {
-    let mut template_test = TemplateTest::new(vec!["."]);
-    let airdrop_result = airdrop(&mut template_test);
+    let mut test = TemplateTest::new(vec!["."]);
+    let airdrop_result = airdrop(&mut test);
 
     // open airdrop
-    let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
-    let result = template_test.execute_expect_success(
+    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
+    let result = test.execute_expect_success(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -85,8 +83,8 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
 
     // add recipients
     for i in 0..100 {
-        let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
-        let result = template_test.execute_expect_success(
+        let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
+        let result = test.execute_expect_success(
             Transaction::builder()
                 .call_method(
                     airdrop_result.airdrop_address,
@@ -100,8 +98,8 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
     }
 
     // fail to add more recipient than allowed
-    let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
-    let result = template_test.execute_expect_failure(
+    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
+    let result = test.execute_expect_failure(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -121,12 +119,12 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
 
 #[test]
 fn test_airdrop_add_recipient_success() {
-    let mut template_test = TemplateTest::new(vec!["."]);
-    let airdrop_result = airdrop(&mut template_test);
+    let mut test = TemplateTest::new(vec!["."]);
+    let airdrop_result = airdrop(&mut test);
 
     // open airdrop
-    let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
-    let result = template_test.execute_expect_success(
+    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
+    let result = test.execute_expect_success(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -146,12 +144,12 @@ fn test_airdrop_add_recipient_success() {
 
 #[test]
 fn test_airdrop_open_airdrop_failure() {
-    let mut template_test = TemplateTest::new(vec!["."]);
-    let airdrop_result = airdrop(&mut template_test);
+    let mut test = TemplateTest::new(vec!["."]);
+    let airdrop_result = airdrop(&mut test);
 
     // open airdrop
-    let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
-    let result = template_test.execute_expect_failure(
+    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
+    let result = test.execute_expect_failure(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -175,12 +173,12 @@ fn test_airdrop_open_airdrop_failure() {
 
 #[test]
 fn test_airdrop_claim_any_success() {
-    let mut template_test = TemplateTest::new(vec!["."]);
-    let airdrop_result = airdrop(&mut template_test);
-    let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
+    let mut test = TemplateTest::new(vec!["."]);
+    let airdrop_result = airdrop(&mut test);
+    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
 
     // get claimed count
-    let result = template_test.execute_expect_success(
+    let result = test.execute_expect_success(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -197,7 +195,7 @@ fn test_airdrop_claim_any_success() {
     assert_eq!(claim_count, 0);
 
     // get vault balance
-    let result = template_test.execute_expect_success(
+    let result = test.execute_expect_success(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -214,7 +212,7 @@ fn test_airdrop_claim_any_success() {
     assert_eq!(vault_balance, 100);
 
     // claim
-    let result = template_test.execute_expect_success(
+    let result = test.execute_expect_success(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -224,12 +222,12 @@ fn test_airdrop_claim_any_success() {
             .call_method(
                 airdrop_result.airdrop_address,
                 "add_recipient",
-                args![account_component.clone()],
+                args![account_component],
             )
             .call_method(
                 airdrop_result.airdrop_address,
                 "claim_any",
-                args![account_component.clone()],
+                args![account_component],
             )
             .put_last_instruction_output_on_workspace("airdrop")
             .call_method(account_component, "deposit", args![Workspace("airdrop")])
@@ -239,7 +237,7 @@ fn test_airdrop_claim_any_success() {
     assert!(result.finalize.result.is_accept());
 
     // get claimed count again
-    let result = template_test.execute_expect_success(
+    let result = test.execute_expect_success(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -256,7 +254,7 @@ fn test_airdrop_claim_any_success() {
     assert_eq!(claim_count, 1);
 
     // get vault balance again
-    let result = template_test.execute_expect_success(
+    let result = test.execute_expect_success(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -275,17 +273,17 @@ fn test_airdrop_claim_any_success() {
 
 #[test]
 fn test_airdrop_claim_any_airdrop_not_open() {
-    let mut template_test = TemplateTest::new(vec!["."]);
-    let airdrop_result = airdrop(&mut template_test);
-    let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
+    let mut test = TemplateTest::new(vec!["."]);
+    let airdrop_result = airdrop(&mut test);
+    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
 
     // claim
-    let reject_reason = template_test.execute_expect_failure(
+    let reject_reason = test.execute_expect_failure(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
                 "claim_any",
-                args![account_component.clone()],
+                args![account_component],
             )
             .put_last_instruction_output_on_workspace("airdrop")
             .call_method(account_component, "deposit", args![Workspace("airdrop")])
@@ -301,12 +299,12 @@ fn test_airdrop_claim_any_airdrop_not_open() {
 
 #[test]
 fn test_airdrop_claim_any_already_claimed() {
-    let mut template_test = TemplateTest::new(vec!["."]);
-    let airdrop_result = airdrop(&mut template_test);
-    let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
+    let mut test = TemplateTest::new(vec!["."]);
+    let airdrop_result = airdrop(&mut test);
+    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
 
     // claim
-    let reject_reason = template_test.execute_expect_failure(
+    let reject_reason = test.execute_expect_failure(
         Transaction::builder()
             .call_method(
                 airdrop_result.airdrop_address,
@@ -316,19 +314,19 @@ fn test_airdrop_claim_any_already_claimed() {
             .call_method(
                 airdrop_result.airdrop_address,
                 "add_recipient",
-                args![account_component.clone()],
+                args![account_component],
             )
             .call_method(
                 airdrop_result.airdrop_address,
                 "claim_any",
-                args![account_component.clone()],
+                args![account_component],
             )
             .put_last_instruction_output_on_workspace("airdrop")
             .call_method(account_component, "deposit", args![Workspace("airdrop")])
             .call_method(
                 airdrop_result.airdrop_address,
                 "claim_any",
-                args![account_component.clone()],
+                args![account_component],
             )
             .build_and_seal(&account_secret_key),
         vec![owner_proof.clone()],

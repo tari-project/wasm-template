@@ -1,2 +1,2 @@
 [template]
-ignore = [ "template.toml" ]
+ignore = ["template.toml"]
