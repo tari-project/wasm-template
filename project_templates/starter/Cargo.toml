@@ -1,5 +1,5 @@
 [workspace]
-members = []
+members = ["templates/counter"]
 resolver = "2"
 
 [profile.release]
