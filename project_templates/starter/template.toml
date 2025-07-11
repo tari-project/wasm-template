@@ -1,5 +1,5 @@
 name = "Starter"
-description = "The **starter** project which includes a basic **wasm template** project to get started easily."
+description = "Great for getting started. Includes the counter template and an example react web application."
 
 [extra]
 templates_dir = "templates"
