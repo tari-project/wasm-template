@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 // import { WalletConnectTariSigner } from "@tari-project/wallet-connect-signer";
 import { defaultPermissions, TariConnectButton } from "@tari-project/react-mui-connect-button";
 import {
@@ -8,7 +8,7 @@ import {
   submitAndWaitForTransaction,
   TariSigner,
   getCborValueByPath,
-  TariPermissions,
+  TariPermissions, SubstateMetadata,
 } from "@tari-project/tarijs-all";
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
@@ -27,13 +27,11 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
   const [txResult, setTxResult] = useState<any>(null); // Store transaction result
   const [showFullJson, setShowFullJson] = useState(false); // Toggle for showing full JSON
-  // const [signer, setSigner] = useState<any>(null); // 
-  const [substates, setSubstates] = useState<any[]>([]); // Store the list of substates
+  const [substates, setSubstates] = useState<SubstateMetadata[]>([]); // Store the list of substates
   const [showSubstates, setShowSubstates] = useState(false); // Toggle for showing substates
   const [counterComponentAddress, setCounterComponentAddress] = useState<string>(""); // Store the entered substate address
   const [value, setValue] = useState<bigint | null>(null); // Store the entered substate address
 
-  
   const WC_PROJECT_ID =  "78f3485d08b9640a087cbcea000e1f8b";
   
   const [signer, setSigner] = useState<TariSigner | null>(null);
@@ -106,7 +104,6 @@ function App() {
           return false;
         }
 
-
         // FIXME: template_address is a string not a Buffer
         return (substate.Component! as ComponentHeader).template_address as unknown as string === TEMPLATE_ADDRESS;
       });
@@ -117,9 +114,6 @@ function App() {
       }
       const id = substateIdToString(pair[0]); // The component address
       setCounterComponentAddress(id);
-      // const response = result.result as { execution_results: { indexed: { value: string}}[]};
-      // const componentAddress = parseCbor(response.execution_results[0].indexed.value);
-      // console.log({componentAddress});
       // @ts-ignore
       const component = pair[1].substate.Component as ComponentHeader;
       const updatedValue = getCborValueByPath(component.body.state, "$.value") as bigint;
@@ -141,14 +135,20 @@ function App() {
     }
 
     try {
-      const response = await signer.listSubstates({filter_by_template: TEMPLATE_ADDRESS,filter_by_type: null, limit: 10, offset: 0}); // Fetch substates
-      setSubstates(response.substates || []); // Save the substates
-      setShowSubstates(true); // Show the substates section
+      const response = await signer
+          .listSubstates({filter_by_template: TEMPLATE_ADDRESS, filter_by_type: null, limit: 10, offset: 0});
+      setSubstates(response.substates);
     } catch (error) {
       console.error("Error fetching substates:", error);
       setErrorMessage("Failed to fetch substates.");
     }
   };
+
+  useEffect(() => {
+    if (showSubstates) {
+      listSubstates();
+    }
+  }, [showSubstates]);
 
   const incrementCounterByAddress = async () => {
     if (!signer || !counterComponentAddress) {
@@ -180,6 +180,7 @@ function App() {
         true
       );
       const txResult = await submitAndWaitForTransaction(signer, submitTransactionRequest);
+
       console.log("Increment Transaction Result:", txResult);
       // TODO: this needs improvement
       const pair = txResult.newComponents.find(([_id, state]) => {
@@ -261,9 +262,8 @@ function App() {
           {isSubmitting ? "Submitting Create Counter Transaction..." : "Create Counter"}
         </button>
 
-{/* Input for Substate Address */}
-<div>
-          <h3>Increment Counter by Substate Address</h3>
+      <div>
+          <h3>Increment Counter</h3>
           <button
             onClick={incrementCounterByAddress}
             disabled={isSubmitting || !counterComponentAddress}
@@ -275,7 +275,7 @@ function App() {
 
 
         {/* List Substates Button */}
-        <button onClick={listSubstates} className="list-substates-button">
+        <button onClick={() => setShowSubstates(!showSubstates)} className="list-substates-button">
           List Substates
         </button>
 
@@ -284,18 +284,18 @@ function App() {
           <div>
             <h3>Substates:</h3>
             <ul>
-              {substates.map((substate, index) => (
+              {substates?.map((substate, index) => (
                 <li key={index}>
                   {JSON.stringify(substate, null, 2)}
                 </li>
-              ))}
+              )) || "Loading substates..."}
             </ul>
           </div>
         )}
 
 
- {/* Display Transaction Result */}
- {txResult && (
+       {/* Display Transaction Result */}
+       {txResult && (
           <div>
             <h3>Transaction Result:</h3>
             <p>Counter Created</p>

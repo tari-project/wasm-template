@@ -1,4 +1,7 @@
+#![no_std]
+
 use tari_template_lib::prelude::*;
+
 
 #[template]
 mod {{ project-name | snake_case }} {
