@@ -14,11 +14,15 @@ import './App.css';
 import { NetworkByte } from "@tari-project/typescript-bindings";
 
 
-// Template address for creating a new component
+/**
+ * The address of the counter component template at the time of writing on the Igor network.
+ * By the time you try this example, the address may no longer work.
+ * Workaround: Deploy the template yourself to testnet using the Tari CLI and use the new address here.
+ */
 const COUNTER_TEMPLATE_ADDRESS = "229611758ac1474ba6bcb83b6927c0c79e07b8e19350f8427d1dfb271107d0df";
 
-// Create the fee amount (e.g., 2000 micro XTR)
-const fee = Amount.new(2000);
+// The max fee that the validators are allowed to charge for these transactions (0.001 XTR)
+const MAX_FEE = Amount.of(1000);
 
 interface CounterComponent {
   value: bigint; // The current value of the counter
@@ -71,7 +75,7 @@ function App() {
           // Allocate a new component address for the counter
           .allocateAddress("Component", "counter_component") // Allocate a new component address
           // Specify that the fee will be paid from the account
-          .feeTransactionPayFromComponent(account.address, fee)
+          .feeTransactionPayFromComponent(account.address, MAX_FEE)
           // Call the template function to create a new component
           .callFunction(
             {
@@ -153,7 +157,7 @@ function App() {
 
       const transaction =
        builder
-           .feeTransactionPayFromComponent(account.address, fee)
+           .feeTransactionPayFromComponent(account.address, MAX_FEE)
            .callMethod({
               componentAddress: counterComponentAddress,
               methodName: "increase", // Call the increase method

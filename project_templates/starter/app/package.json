@@ -12,8 +12,8 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@tari-project/react-mui-connect-button": "^0.12.0",
-    "@tari-project/tarijs-all": "^0.12.0",
+    "@tari-project/react-mui-connect-button": "^0.12.1",
+    "@tari-project/tarijs-all": "^0.12.1",
     "@tari-project/typescript-bindings": "^1.13.1",
     "@tari-project/wallet_jrpc_client": "^1.7.2",
     "react": "^19.0.0",
