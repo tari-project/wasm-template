@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-// import { WalletConnectTariSigner } from "@tari-project/wallet-connect-signer";
 import { defaultPermissions, TariConnectButton } from "@tari-project/react-mui-connect-button";
 import {
   AccountData,
@@ -7,27 +6,30 @@ import {
   buildTransactionRequest,
   submitAndWaitForTransaction,
   TariSigner,
-  getCborValueByPath,
-  TariPermissions, SubstateMetadata,
+  TariPermissions, Amount,
 } from "@tari-project/tarijs-all";
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
-import {ComponentHeader, NetworkByte, substateIdToString} from "@tari-project/typescript-bindings";
+import { NetworkByte } from "@tari-project/typescript-bindings";
 
 
 // Template address for creating a new component
-const TEMPLATE_ADDRESS = "4e58528c0ab45e0201c617d6860752e23ca02c331235e8907a61c420b7e6465f";
+const COUNTER_TEMPLATE_ADDRESS = "4e58528c0ab45e0201c617d6860752e23ca02c331235e8907a61c420b7e6465f";
 
 // Create the fee amount (e.g., 2000 micro XTR)
-const fee = 2000;
+const fee = Amount.new(2000);
+
+interface CounterComponent {
+  value: bigint; // The current value of the counter
+}
 
 function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Track any connection errors
   const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
   const [txResult, setTxResult] = useState<any>(null); // Store transaction result
   const [showFullJson, setShowFullJson] = useState(false); // Toggle for showing full JSON
-  const [substates, setSubstates] = useState<SubstateMetadata[]>([]); // Store the list of substates
+  const [substates, setSubstates] = useState<any[]>([]); // Store the list of substates
   const [showSubstates, setShowSubstates] = useState(false); // Toggle for showing substates
   const [counterComponentAddress, setCounterComponentAddress] = useState<string>(""); // Store the entered substate address
   const [value, setValue] = useState<bigint | null>(null); // Store the entered substate address
@@ -69,11 +71,11 @@ function App() {
           // Allocate a new component address for the counter
           .allocateAddress("Component", "counter_component") // Allocate a new component address
           // Specify that the fee will be paid from the account
-          .feeTransactionPayFromComponent(account.address, fee.toString())
+          .feeTransactionPayFromComponent(account.address, fee)
           // Call the template function to create a new component
           .callFunction(
             {
-              templateAddress: TEMPLATE_ADDRESS,
+              templateAddress: COUNTER_TEMPLATE_ADDRESS,
               // Create a new counter - you can also use "new" but then you would not be able to increase the counter in the same transaction
               functionName: "with_address",
             },
@@ -91,34 +93,19 @@ function App() {
       const submitTransactionRequest = buildTransactionRequest(
         transaction,
         account.account_id,
-        true
       );
 
       // Submit the transaction and wait for the result
       const txResult = await submitAndWaitForTransaction(signer, submitTransactionRequest);
-      // TODO: this needs improvement
-      const pair = txResult.newComponents.find(([_id, state]) => {
-        const substate = state.substate;
-        console.log({_id, substate});
-        if (!substate || !("Component" in substate)) {
-          return false;
-        }
-
-        // FIXME: template_address is a string not a Buffer
-        return (substate.Component! as ComponentHeader).template_address as unknown as string === TEMPLATE_ADDRESS;
-      });
-      console.log(pair);
-      if (!pair) {
+      const counter = txResult.getComponentsByTemplateAddress(COUNTER_TEMPLATE_ADDRESS)[0];
+      if (!counter) {
         setErrorMessage("Failed to increment counter. Component not found in transaction result.");
         return;
       }
-      const id = substateIdToString(pair[0]); // The component address
-      setCounterComponentAddress(id);
-      // @ts-ignore
-      const component = pair[1].substate.Component as ComponentHeader;
-      const updatedValue = getCborValueByPath(component.body.state, "$.value") as bigint;
+      setCounterComponentAddress(counter.id);
+      const updatedValue = counter.decodeBody<{value: bigint}>();
       console.log("Updated Value:", updatedValue);
-      setValue(updatedValue);
+      setValue(updatedValue.value);
       setTxResult(txResult);  // Save the transaction result
     } catch (error) {
       console.error("Transaction error:", error);
@@ -136,7 +123,7 @@ function App() {
 
     try {
       const response = await signer
-          .listSubstates({filter_by_template: TEMPLATE_ADDRESS, filter_by_type: null, limit: 10, offset: 0});
+          .listSubstates({filter_by_template: COUNTER_TEMPLATE_ADDRESS, filter_by_type: null, limit: 10, offset: 0});
       setSubstates(response.substates);
     } catch (error) {
       console.error("Error fetching substates:", error);
@@ -166,42 +153,31 @@ function App() {
 
       const transaction =
        builder
-           .feeTransactionPayFromComponent(account.address, fee.toString())
+           .feeTransactionPayFromComponent(account.address, fee)
            .callMethod({
-        componentAddress: counterComponentAddress,
-        methodName: "increase", // Call the increase method
-      }, [])
+              componentAddress: counterComponentAddress,
+              methodName: "increase", // Call the increase method
+            }, [])
      .buildUnsignedTransaction();
 
-
       const submitTransactionRequest = buildTransactionRequest(
-        transaction,
-       account.account_id,
-        true
+          transaction,
+          account.account_id,
       );
       const txResult = await submitAndWaitForTransaction(signer, submitTransactionRequest);
 
       console.log("Increment Transaction Result:", txResult);
-      // TODO: this needs improvement
-      const pair = txResult.newComponents.find(([_id, state]) => {
-        const substate = state.substate;
-        if (!substate || !("Component" in substate)) {
-          return false;
-        }
-        // FIXME: template_address is a string not a Buffer
-        return (substate.Component! as ComponentHeader).template_address as unknown as string === TEMPLATE_ADDRESS;
-      });
-      if (!pair) {
+
+      const counter = txResult.getComponentsByTemplateAddress(COUNTER_TEMPLATE_ADDRESS)[0];
+      if (!counter) {
         setErrorMessage("Failed to increment counter. Component not found in transaction result.");
         return;
       }
-      const id = substateIdToString(pair[0]); // The component address
-      setCounterComponentAddress(id);
+      setCounterComponentAddress(counter.id);
       // @ts-ignore
-      const component = pair[1].substate.Component as ComponentHeader;
-      const updatedValue = getCborValueByPath(component.body.state, "$.value") as bigint;
+      const updatedValue = counter.decodeBody<CounterComponent>();
       console.log("Updated Value:", updatedValue);
-      setValue(updatedValue);
+      setValue(updatedValue.value);
     } catch (error) {
       console.error("Error incrementing counter:", error);
       setErrorMessage("Failed to increment counter.");
@@ -229,7 +205,6 @@ function App() {
       )}
 
       {/* Display the Connection Button and Connection status */}
-  <>
       <TariConnectButton
         isConnected={signer?.isConnected() || false}
         walletConnectParams={wcParams}
@@ -247,15 +222,14 @@ function App() {
           <p>Public Key: {account.public_key}</p>
           <h3>Resources:</h3>
           <ul>
-            {account.resources.map((resource, index) => (
+            {account.vaults.map((vault, index) => (
               <li key={index}>
-                {resource.type} - {resource.balance} {resource.token_symbol}
+                {vault.type} - {vault.balance} {vault.token_symbol}
               </li>
             ))}
           </ul>
         </div>
       ) : null}
-    </>
 
         {/* Transaction Submit Button */}
         <button onClick={createCounter} disabled={isSubmitting} className="submit-button">
