@@ -15,7 +15,7 @@ import { NetworkByte } from "@tari-project/typescript-bindings";
 
 
 // Template address for creating a new component
-const COUNTER_TEMPLATE_ADDRESS = "4e58528c0ab45e0201c617d6860752e23ca02c331235e8907a61c420b7e6465f";
+const COUNTER_TEMPLATE_ADDRESS = "229611758ac1474ba6bcb83b6927c0c79e07b8e19350f8427d1dfb271107d0df";
 
 // Create the fee amount (e.g., 2000 micro XTR)
 const fee = Amount.new(2000);
