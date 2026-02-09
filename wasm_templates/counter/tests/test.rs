@@ -2,12 +2,12 @@ use tari_template_test_tooling::{TemplateTest, transaction::{args, Transaction}}
 
 #[test]
 fn it_works() {
-    let mut test = TemplateTest::new(["."]);
+    let mut test = TemplateTest::my_crate();
 
     let counter_template = test.get_template_address("{{ project-name | upper_camel_case }}");
 
     let result = test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .allocate_component_address("addr")
             .call_function(counter_template, "with_address", args![Workspace("addr")])
             .call_method("addr", "value", args![])

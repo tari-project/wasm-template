@@ -3,6 +3,7 @@
 use tari_template_lib::prelude::*;
 
 // Use talc as the global allocator
+#[cfg(not(test))]
 #[global_allocator]
 static ALLOCATOR: talc::TalckWasm = unsafe { talc::TalckWasm::new_global() };
 
