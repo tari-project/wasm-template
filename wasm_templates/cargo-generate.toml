@@ -1,2 +1,2 @@
 [template]
-subtemplates = ["counter", "fungible", "nft", "swap", "meme_coin", "airdrop", "stable_coin"]
+subtemplates = ["empty", "no_std", "counter", "fungible", "nft", "swap", "meme_coin", "airdrop", "stable_coin"]
