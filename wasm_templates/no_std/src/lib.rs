@@ -1,3 +1,5 @@
+#![no_std]
+
 use tari_template_lib::prelude::*;
 
 // Use talc as the global allocator
