@@ -20,4 +20,4 @@ strip = "debuginfo" # Strip debug info.
 {% endif %}
 
 [lib]
-crate-type = ["cdylib", "lib"]
+crate-type = ["cdylib"]
