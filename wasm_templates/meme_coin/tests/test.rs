@@ -1,6 +1,5 @@
 use tari_template_test_tooling::engine_types::commit_result::RejectReason;
-use tari_template_lib::models::{Metadata, NonFungibleAddress};
-use tari_template_lib::prelude::{Amount, ComponentAddress};
+use tari_template_lib::types::{Amount, ComponentAddress, amount, NonFungibleAddress, Metadata};
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::TemplateTest;
 use tari_template_test_tooling::transaction::{args, Transaction};
@@ -148,7 +147,7 @@ fn test_memecoin_owner_burn() {
     let mut template_test = TemplateTest::my_crate();
     let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
 
-    let burned_amount = Amount::from(100);
+    let burned_amount = amount![100];
 
     let result = template_test.execute_expect_success(
         Transaction::builder_localnet()
@@ -177,7 +176,7 @@ fn test_memecoin_owner_mint() {
     let mut template_test = TemplateTest::my_crate();
     let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
 
-    let deposited_amount = Amount::from(100);
+    let deposited_amount = amount![100];
 
     let result = template_test.execute_expect_success(
         Transaction::builder_localnet()

@@ -1,7 +1,6 @@
 use tari_template_test_tooling::transaction::{args, Transaction};
 use tari_template_lib::models::{Bucket, ComponentAddress, NonFungibleAddress, ResourceAddress};
-use tari_template_lib::prelude::Amount;
-use tari_template_lib::prelude::Metadata;
+use tari_template_lib::types::{Amount, Metadata, amount};
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::SubstateType;
@@ -40,7 +39,7 @@ fn auction_period_ends_with_winning_bid() {
     let bid1 = BidRequest {
         auction: auction_component,
         bidder: bidder1.clone(),
-        bid: Amount::from(100),
+        bid: amount![100],
     };
     bid(&mut test, &bid1);
     let bidder1_balance = get_account_tari_balance(&mut test, &bidder1);
@@ -50,7 +49,7 @@ fn auction_period_ends_with_winning_bid() {
     let bid2 = BidRequest {
         auction: auction_component,
         bidder: bidder2.clone(),
-        bid: Amount::from(200),
+        bid: amount![200],
     };
     bid(&mut test, &bid2);
 
@@ -126,7 +125,7 @@ fn auction_finishes_by_buying_price_bid() {
     } = setup();
 
     // create an auction for the NFT
-    let buy_price = Amount::from(100);
+    let buy_price = amount![100];
     let auction = AuctionRequest {
         marketplace: auction_index_component,
         seller: seller.clone(),
@@ -185,7 +184,7 @@ fn auction_cancelled_by_seller() {
     let bid1 = BidRequest {
         auction: auction_component,
         bidder: bidder1.clone(),
-        bid: Amount::from(100),
+        bid: amount![100],
     };
     bid(&mut test, &bid1);
     let bidder1_balance = get_account_tari_balance(&mut test, &bidder1);
@@ -469,8 +468,8 @@ fn it_rejects_invalid_auction_finish() {
         ..
     } = setup();
     // let's publish a valid auction
-    let min_price = Amount::from(100);
-    let buy_price = Amount::from(500);
+    let min_price = amount![100];
+    let buy_price = amount![500];
     let auction_period = 10;
     let auction = AuctionRequest {
         marketplace: auction_index_component,

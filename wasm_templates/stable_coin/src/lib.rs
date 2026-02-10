@@ -12,7 +12,7 @@ mod template {
     use std::collections::BTreeSet;
     use tari_template_lib::engine;
 
-    const DEFAULT_WRAPPED_TOKEN_EXCHANGE_FEE: ExchangeFee = ExchangeFee::Fixed(amount!("5"));
+    const DEFAULT_WRAPPED_TOKEN_EXCHANGE_FEE: ExchangeFee = ExchangeFee::Fixed(amount!(5));
 
     pub struct {{ project-name | upper_camel_case }} {
         token_vault: Vault,
@@ -368,7 +368,7 @@ mod template {
             user_account: ComponentAddress,
         ) -> Bucket {
             // TODO: configurable?
-            const DEFAULT_EXCHANGE_LIMIT: Amount = amount!("1000");
+            const DEFAULT_EXCHANGE_LIMIT: Amount = amount!(1000);
 
             let badge = self.user_badge_manager().mint_non_fungible(
                 user_id.into(),
