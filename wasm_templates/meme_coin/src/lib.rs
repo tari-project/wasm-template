@@ -34,7 +34,7 @@ pub mod {{ project-name | snake_case }} {
         }
 
         pub fn set_access_rules(&mut self, access_rules: ResourceAccessRules) {
-            ResourceManager::get(self.token_vault.resource_address()).set_access_rules(access_rules)
+            self.token_vault.get_resource_manager().set_access_rules(access_rules)
         }
 
         pub fn burn(&mut self, amount: Amount) {
@@ -48,7 +48,7 @@ pub mod {{ project-name | snake_case }} {
 
         pub fn mint(&mut self, amount: Amount) {
             let bucket =
-                ResourceManager::get(self.token_vault.resource_address()).mint_fungible(amount);
+                self.token_vault.get_resource_manager().mint_fungible(amount);
             self.token_vault.deposit(bucket);
         }
 
@@ -57,7 +57,7 @@ pub mod {{ project-name | snake_case }} {
         }
 
         pub fn total_supply(&self) -> Amount {
-            ResourceManager::get(self.token_vault.resource_address()).total_supply()
+            self.token_vault.get_resource_manager().total_supply()
         }
 
         pub fn balance(&self) -> Amount {

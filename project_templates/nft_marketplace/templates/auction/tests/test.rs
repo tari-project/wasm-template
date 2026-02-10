@@ -1,7 +1,6 @@
 use tari_template_test_tooling::transaction::{args, Transaction};
 use tari_template_lib::models::{Bucket, ComponentAddress, NonFungibleAddress, ResourceAddress};
-use tari_template_lib::prelude::Amount;
-use tari_template_lib::prelude::Metadata;
+use tari_template_lib::types::{Amount, Metadata, amount};
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::SubstateType;
@@ -40,7 +39,7 @@ fn auction_period_ends_with_winning_bid() {
     let bid1 = BidRequest {
         auction: auction_component,
         bidder: bidder1.clone(),
-        bid: Amount::from(100),
+        bid: amount![100],
     };
     bid(&mut test, &bid1);
     let bidder1_balance = get_account_tari_balance(&mut test, &bidder1);
@@ -50,7 +49,7 @@ fn auction_period_ends_with_winning_bid() {
     let bid2 = BidRequest {
         auction: auction_component,
         bidder: bidder2.clone(),
-        bid: Amount::from(200),
+        bid: amount![200],
     };
     bid(&mut test, &bid2);
 
@@ -126,7 +125,7 @@ fn auction_finishes_by_buying_price_bid() {
     } = setup();
 
     // create an auction for the NFT
-    let buy_price = Amount::from(100);
+    let buy_price = amount![100];
     let auction = AuctionRequest {
         marketplace: auction_index_component,
         seller: seller.clone(),
@@ -185,7 +184,7 @@ fn auction_cancelled_by_seller() {
     let bid1 = BidRequest {
         auction: auction_component,
         bidder: bidder1.clone(),
-        bid: Amount::from(100),
+        bid: amount![100],
     };
     bid(&mut test, &bid1);
     let bidder1_balance = get_account_tari_balance(&mut test, &bidder1);
@@ -225,7 +224,7 @@ fn it_rejects_invalid_auctions() {
     // reject if resource is not an nft
     // we test it by trying to auction a Tari fungible token
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(seller.component, "withdraw", args![XTR, Amount(1)]) // invalid resource
             .put_last_instruction_output_on_workspace("nft_bucket")
             .call_method(
@@ -253,7 +252,7 @@ fn it_rejects_invalid_auctions() {
     // reject if multiple nfts in the bucket
     mint_account_nft(&mut test, &seller, &account_nft_component);
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 seller.component,
                 "withdraw",
@@ -284,7 +283,7 @@ fn it_rejects_invalid_auctions() {
 
     // reject if the auction period is invalid
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 seller.component,
                 "withdraw",
@@ -315,7 +314,7 @@ fn it_rejects_invalid_auctions() {
 
     // reject if the seller account is not an account component
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 seller.component,
                 "withdraw",
@@ -374,7 +373,7 @@ fn it_rejects_invalid_bids() {
     let bidder_nft_component = create_account_nft_component(&mut test, &bidder);
     let bidder_nft_address = mint_account_nft(&mut test, &bidder, &bidder_nft_component);
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 bidder.component,
                 "withdraw",
@@ -396,7 +395,7 @@ fn it_rejects_invalid_bids() {
 
     // reject if buy price is too low
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(bidder.component, "withdraw", args![XTR, min_price - 1])
             .put_last_instruction_output_on_workspace("payment")
             .call_method(
@@ -411,7 +410,7 @@ fn it_rejects_invalid_bids() {
 
     // reject if buy price is too high (higher than the buy price)
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(bidder.component, "withdraw", args![XTR, buy_price + 1])
             .put_last_instruction_output_on_workspace("payment")
             .call_method(
@@ -426,7 +425,7 @@ fn it_rejects_invalid_bids() {
 
     // reject if the bidder account is not an account component
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(bidder.component, "withdraw", args![XTR, Amount(1)])
             .put_last_instruction_output_on_workspace("payment")
             // using the bidder's nft component address instead of its account
@@ -445,7 +444,7 @@ fn it_rejects_invalid_bids() {
     // reject if the auction has expired
     set_epoch(&mut test, auction_period + 1);
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(bidder.component, "withdraw", args![XTR, min_price + 1])
             .put_last_instruction_output_on_workspace("payment")
             .call_method(
@@ -469,8 +468,8 @@ fn it_rejects_invalid_auction_finish() {
         ..
     } = setup();
     // let's publish a valid auction
-    let min_price = Amount::from(100);
-    let buy_price = Amount::from(500);
+    let min_price = amount![100];
+    let buy_price = amount![500];
     let auction_period = 10;
     let auction = AuctionRequest {
         marketplace: auction_index_component,
@@ -493,7 +492,7 @@ fn it_rejects_invalid_auction_finish() {
 
     // the auction period has not ended yet, so the bidder should not be able to finish
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 auction_component,
                 "finish",
@@ -532,7 +531,7 @@ fn it_rejects_invalid_auction_cancels() {
     let other_nft = mint_account_nft(&mut test, &seller, &account_nft_component);
 
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 seller.component,
                 "withdraw_non_fungible",
@@ -552,7 +551,7 @@ fn it_rejects_invalid_auction_cancels() {
     // reject the cancel if the auction has ended
     set_epoch(&mut test, auction_period + 1);
     let reason = test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 seller.component,
                 "withdraw_non_fungible",
@@ -586,7 +585,7 @@ struct TestSetup {
 }
 
 fn setup() -> TestSetup {
-    let mut test = TemplateTest::new_with_shared_target_dir(["../index", "."], "../../target/");
+    let mut test = TemplateTest::my_crate();
     let auction_index_template = test.get_template_address("AuctionIndex");
     let auction_template = test.get_template_address("Auction");
 
@@ -600,7 +599,7 @@ fn setup() -> TestSetup {
 
     // create the auction index component
     let result = test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_function(auction_index_template, "new", args![auction_template])
             .build_and_seal(&seller.key),
         vec![seller.owner_token.clone()],
@@ -637,7 +636,7 @@ fn get_account_balance(
     resource: &ResourceAddress,
 ) -> Amount {
     let result = test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(account.component, "balance", args![resource])
             .build_and_seal(&account.key),
         vec![account.owner_token.clone()],
@@ -655,7 +654,7 @@ fn get_account_tari_balance(test: &mut TemplateTest, account: &Account) -> Amoun
 fn create_account_nft_component(test: &mut TemplateTest, account: &Account) -> ComponentAddress {
     let account_nft_template = test.get_template_address("AccountNonFungible");
     let result = test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_function(account_nft_template, "create", args![account.owner_token])
             .build_and_seal(&account.key),
         vec![account.owner_token.clone()],
@@ -675,7 +674,7 @@ fn mint_account_nft(
     nft_metadata.insert("name".to_string(), "my_custom_nft".to_string());
 
     test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(*account_nft_component, "mint", args![nft_metadata])
             .put_last_instruction_output_on_workspace("nft_bucket")
             .call_method(account.component, "deposit", args![Workspace("nft_bucket")])
@@ -700,7 +699,7 @@ struct AuctionRequest {
 // returns the seller badge
 fn create_auction(test: &mut TemplateTest, req: &AuctionRequest) -> (ComponentAddress, NonFungibleAddress) {
     let result = test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 req.seller.component,
                 "withdraw",
@@ -747,7 +746,7 @@ struct BidRequest {
 
 fn bid(test: &mut TemplateTest, req: &BidRequest) {
     test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(req.bidder.component, "withdraw", args![XTR, req.bid])
             .put_last_instruction_output_on_workspace("payment")
             .call_method(
@@ -775,7 +774,7 @@ struct FinishRequest {
 
 fn finish_auction(test: &mut TemplateTest, req: &FinishRequest) {
     test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(req.auction, "finish", args![])
             .build_and_seal(&req.account.key),
         vec![req.account.owner_token.clone()],
@@ -791,7 +790,7 @@ struct CancelRequest {
 
 fn cancel_auction(test: &mut TemplateTest, req: &CancelRequest) {
     test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 req.account.component,
                 "withdraw_non_fungible",

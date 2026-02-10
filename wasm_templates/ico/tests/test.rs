@@ -16,7 +16,7 @@ struct IcoCreateResult {
 fn ico(test: &mut TemplateTest) -> IcoCreateResult {
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
     let create_coin_result = test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_function(
                 test.get_template_address("{{ project-name | upper_camel_case }}Ico"),
                 "new",
@@ -46,7 +46,7 @@ fn ico(test: &mut TemplateTest) -> IcoCreateResult {
 
 #[test]
 fn test_buy_success() {
-    let mut template_test = TemplateTest::new(["."]);
+    let mut template_test = TemplateTest::my_crate();
     let ico_result = ico(&mut template_test);
 
     // create a non-owner new account
@@ -54,7 +54,7 @@ fn test_buy_success() {
 
     // buy ICOs with XTR
     let result = template_test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 ico_result.ico_address,
                 "ico_resource_address",
@@ -125,7 +125,7 @@ fn test_buy_success() {
 
 #[test]
 fn test_buy_insufficient_funds() {
-    let mut template_test = TemplateTest::new(["."]);
+    let mut template_test = TemplateTest::my_crate();
     let ico_result = ico(&mut template_test);
 
     // create a non-owner new account
@@ -133,7 +133,7 @@ fn test_buy_insufficient_funds() {
 
     // buy ICOs with XTR
     let reject_reason = template_test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 ico_result.ico_address,
                 "ico_resource_address",
@@ -173,7 +173,7 @@ fn test_buy_insufficient_funds() {
 
 #[test]
 fn test_withdraw_access_denied() {
-    let mut template_test = TemplateTest::new(["."]);
+    let mut template_test = TemplateTest::my_crate();
     let ico_result = ico(&mut template_test);
 
     // create a non-owner new account
@@ -181,7 +181,7 @@ fn test_withdraw_access_denied() {
 
     // buy ICOs with XTR
     let _ = template_test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 account_component,
                 "withdraw",
@@ -205,7 +205,7 @@ fn test_withdraw_access_denied() {
 
     // try to withdraw funds from ICO using non-owner account
     let reject_reason = template_test.execute_expect_failure(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 ico_result.ico_address,
                 "withdraw",
@@ -226,7 +226,7 @@ fn test_withdraw_access_denied() {
 
 #[test]
 fn test_owner_withdraw() {
-    let mut template_test = TemplateTest::new(["."]);
+    let mut template_test = TemplateTest::my_crate();
     let ico_result = ico(&mut template_test);
 
     // create a non-owner new account
@@ -234,7 +234,7 @@ fn test_owner_withdraw() {
 
     // buy ICOs with XTR
     let _ = template_test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 account_component,
                 "withdraw",
@@ -258,7 +258,7 @@ fn test_owner_withdraw() {
 
     // withdraw funds with owner
     let result = template_test.execute_expect_success(
-        Transaction::builder()
+        Transaction::builder_localnet()
             .call_method(
                 account_component,
                 "balance",

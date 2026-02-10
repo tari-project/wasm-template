@@ -6,7 +6,7 @@ mod test {
 
     #[test]
     fn test_nft() {
-        let mut test = TemplateTest::new(vec!["."]);
+        let mut test = TemplateTest::my_crate();
 
         // Create an Account
         let (receiver_address, _receiver_owner_proof, _secret_key) =
@@ -22,7 +22,7 @@ mod test {
         assert_eq!(total_supply, 0);
 
         let result = test.try_execute(
-            Transaction::builder()
+            Transaction::builder_localnet()
                 .call_method(nft_component, "mint", args![])
                 .put_last_instruction_output_on_workspace("new_nft")
                 .call_method(receiver_address, "deposit", args![Workspace("new_nft")])

@@ -70,7 +70,7 @@ pub mod {{ project-name | snake_case }} {
         }
 
         pub fn total_supply(&self) -> Amount {
-            ResourceManager::get(self.vault.resource_address()).total_supply()
+            self.vault.get_resource_manager().total_supply()
         }
 
         pub fn num_claimed(&self) -> u128 {
@@ -82,7 +82,7 @@ pub mod {{ project-name | snake_case }} {
         }
 
         pub fn set_access_rules(&mut self, access_rules: ResourceAccessRules) {
-            ResourceManager::get(self.vault.resource_address()).set_access_rules(access_rules)
+            self.vault.get_resource_manager().set_access_rules(access_rules)
         }
     }
 }

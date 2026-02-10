@@ -38,7 +38,7 @@ pub mod {{ project-name | snake_case }} {
         }
 
         pub fn total_supply(&self) -> Amount {
-            ResourceManager::get(self.vault.resource_address()).total_supply()
+            self.vault.get_resource_manager().total_supply()
         }
     }
 }

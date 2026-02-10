@@ -1,10 +1,10 @@
 [package]
 name = "nft_marketplace_auction"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-tari_template_lib = "0.15"
+tari_template_lib = "0.16"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 
 [dev-dependencies]

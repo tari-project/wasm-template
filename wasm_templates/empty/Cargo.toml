@@ -2,11 +2,11 @@
 name = "{{project-name}}"
 version = "0.1.0"
 authors = ["{{authors}}"]
-edition = "2021"
+edition = "2024"
 
 
 [dependencies]
-tari_template_lib = { version = "0.15" }
+tari_template_lib = "0.16"
 
 [dev-dependencies]
 tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.20.0" }
