@@ -3,6 +3,7 @@
 
 use tari_template_lib::models::{ResourceAddress, Vault};
 use tari_template_lib::types::Amount;
+use tari_template_lib::resource::ResourceManager;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum ExchangeFee {
@@ -31,6 +32,10 @@ pub struct WrappedExchangeToken {
 impl WrappedExchangeToken {
     pub(crate) fn resource_address(&self) -> ResourceAddress {
         self.vault.resource_address()
+    }
+
+    pub(crate) fn get_resource_manager(&self) -> ResourceManager {
+        self.vault.get_resource_manager()
     }
 
     pub fn vault(&self) -> &Vault {

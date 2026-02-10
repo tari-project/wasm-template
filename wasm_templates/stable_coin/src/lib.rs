@@ -157,7 +157,7 @@ mod template {
 
             if let Some(ref mut wrapped_token) = self.wrapped_token {
                 let new_tokens =
-                    ResourceManager::get(wrapped_token.resource_address()).mint_fungible(amount);
+                    wrapped_token.get_resource_manager().mint_fungible(amount);
                 wrapped_token.vault_mut().deposit(new_tokens);
             }
 
@@ -475,7 +475,7 @@ mod template {
         }
 
         fn token_vault_manager(&self) -> ResourceManager {
-            ResourceManager::get(self.token_vault.resource_address())
+            self.token_vault.get_resource_manager()
         }
 
         fn wrapped_token_mut(&mut self) -> &mut WrappedExchangeToken {

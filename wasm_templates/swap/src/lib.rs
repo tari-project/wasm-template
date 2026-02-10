@@ -111,7 +111,7 @@ mod asd {
             let new_lp_amount = a_ratio * a_amount + b_ratio * b_amount;
 
             // mint and return the new lp tokens
-            ResourceManager::get(self.lp_resource).mint_fungible(new_lp_amount)
+            self.lp_resource.get_resource_manager().mint_fungible(new_lp_amount)
         }
 
         pub fn remove_liquidity(&mut self, lp_bucket: Bucket) -> (Bucket, Bucket) {
