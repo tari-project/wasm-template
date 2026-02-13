@@ -7,7 +7,7 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tari_template_lib = "0.16"
+tari_template_lib = "0.19"
 tari_template_abi = "0.10"
 
 {% if in_cargo_workspace == "false" %}
