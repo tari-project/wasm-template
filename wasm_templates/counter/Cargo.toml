@@ -6,10 +6,10 @@ edition = "2024"
 
 
 [dependencies]
-tari_template_lib = "0.16"
+tari_template_lib = "0.19"
 
 [dev-dependencies]
-tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.20.0" }
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.22.0" }
 
 
 {% if in_cargo_workspace == "false" %}
