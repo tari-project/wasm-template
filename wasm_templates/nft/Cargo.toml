@@ -7,7 +7,7 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tari_template_lib = "0.19"
+tari_template_lib = "*"
 serde = { version = "1.0.143", default-features = false, features = ["derive", "alloc"] }
 
 {% if in_cargo_workspace == "false" %}
@@ -24,6 +24,6 @@ crate-type = ["cdylib"]
 
 [dev-dependencies]
 log = "*"
-tari_template_test_tooling = {git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.22.0" }
-tari_engine_types = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.22.0"}
-tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.22.0" }
+tari_template_test_tooling = {git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.23.0" }
+tari_engine_types = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.23.0"}
+tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.23.0" }
