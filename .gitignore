@@ -2,6 +2,7 @@ target
 .vscode
 .idea/
 data/
+.claude/
 
 # Ignore Cargo.lock files in examples, they are not meant to be published
 examples/*/Cargo.lock
