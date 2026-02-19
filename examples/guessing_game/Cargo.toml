@@ -1,0 +1,14 @@
+[workspace]
+[package]
+name = "guessing_game"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tari_template_lib = { version = "*" }
+
+[dev-dependencies]
+tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.23.1" }
+
+[lib]
+crate-type = ["cdylib"]
