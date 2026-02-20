@@ -184,7 +184,7 @@ fn parse_network(s: &str) -> anyhow::Result<Network> {
         "LocalNet" => Ok(Network::LocalNet),
         "Esmeralda" => Ok(Network::Esmeralda),
         "Igor" => Ok(Network::Igor),
-        "MainNet" => Ok(Network::MainNet),
+        "MainNet" => anyhow::bail!("MainNet is not supported in this example."),
         other => anyhow::bail!("Unknown network: {other}"),
     }
 }
@@ -302,7 +302,7 @@ async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
     // ── Interactive prompts (skipped if keys already exist) ──────────────────
 
     if !state.is_initialized() {
-        let networks = &["Esmeralda", "LocalNet", "MainNet"];
+        let networks = &["Esmeralda", "LocalNet"];
         let network_idx = Select::new()
             .with_prompt("Select network")
             .default(0)
@@ -695,6 +695,7 @@ async fn create_user(
 
     let user = User {
         name,
+        // WARNING: storing key material in state file is not secure! Don't do this. This is just for demo purposes.
         account_secret_hex: secret.account_secret().to_hex(),
         view_secret_hex: secret.view_only_secret().to_hex(),
         account_address,
