@@ -1,7 +1,7 @@
 mod want_list;
 
 use crate::want_list::WantList;
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
 use dialoguer::{Input, Select};
 use ootle_rs::{
     ToAccountAddress, TransactionRequest,
@@ -268,7 +268,7 @@ async fn main() -> anyhow::Result<()> {
 async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
     // If fully complete, just show current state.
     if state.is_initialized() && state.account_address.is_some() {
-        println!("✅ Wallet already initialized.");
+        println!("✅ Cli is already initialized.");
         println!("  🌐 Network:          {}", state.network);
         println!("  🔗 Indexer:          {}", state.indexer_url);
         println!(
@@ -291,11 +291,8 @@ async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
                 .unwrap_or_else(|| "(not set — run `create`)".to_string())
         );
         println!();
-        println!("Available commands:");
-        println!("  create                               🚀 Deploy a new GuessingGame component");
-        println!("  start-game <nft-id>                  🎲 Start a new round");
-        println!("  guess <number> [--payout-to <addr>]  🤔 Submit a guess (0–10)");
-        println!("  end-game                             🏆 End the round and pay out winner");
+        Cli::command().print_help()?;
+        println!();
         return Ok(());
     }
 
