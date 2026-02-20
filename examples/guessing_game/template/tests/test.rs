@@ -8,9 +8,7 @@ use tari_template_test_tooling::{
     transaction::{Transaction, args},
 };
 
-const TEMPLATE_PATHS: &[&str] = &["tests/templates/guessing_game"];
 const TEMPLATE_NAME: &str = "GuessingGame";
-const CRATE_PATH: &str = env!("CARGO_MANIFEST_DIR");
 
 #[test]
 fn it_works() {
@@ -25,10 +23,11 @@ fn it_works() {
     // pay the fee.
     test.execute_expect_success(
         Transaction::builder_localnet()
-            // Allocate a new component address
-            .allocate_component_address("guessing_game")
-            // Construct the component by calling the `new` function of the template, passing the address allocation as an argument
-            .call_function(template, "new", args![Workspace("guessing_game")])
+            // Construct the component by calling the `new` function of the template
+            .call_function(template, "new", args![])
+            // The `new` function returns the component address of the newly created game, we need to
+            // put it in the workspace to be able to use it in the next instruction.
+            .put_last_instruction_output_on_workspace("guessing_game")
             // Start a new game
             .call_method("guessing_game", "start_game", args![prize])
             .build_and_seal(test.secret_key()),
