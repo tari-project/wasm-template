@@ -25,11 +25,12 @@ mod template {
     impl GuessingGame {
         /// Constructs a new Guessing Game component.
         ///
-        /// The caller must provide a component address allocation.
-        /// This allows the component to be created and called within one transaction instead of one transaction to
-        /// create the component and others to call it with the new address. While this is not strictly necessary, it is
-        /// good practice to provide this in constructors.
-        pub fn new(address: ComponentAddressAllocation) -> Component<Self> {
+        /// NOTE: It is not strictly necessary to return the Component<Self> from the constructor, because
+        ///the call to `create()` instantiates the component and assigns an address. However, it is
+        /// good practice to return it in constructors because it allows the component to be used immediately
+        /// after construction within the same transaction. If you don't return the component, users will need to
+        /// submit one transaction to construct the component and then another transaction to call methods on it.
+        pub fn new() -> Component<Self> {
             // Create a new NFT Resource that will be awarded to winners
             let prize_resource = ResourceBuilder::non_fungible()
                 // Optionally give it a name
@@ -54,7 +55,6 @@ mod template {
                 guesses: HashMap::new(),
                 round_number: 0,
             })
-            .with_address_allocation(address)
             .with_access_rules(access_rules)
             .create()
         }

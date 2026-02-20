@@ -434,8 +434,7 @@ async fn cmd_create(state_path: &Path, state: &mut State) -> anyhow::Result<()> 
         |builder| {
             builder
                 .pay_fee_from_component(account_addr, 2000u64)
-                .allocate_component_address("new_component")
-                .call_function(template_addr, "new", args![Workspace("new_component")])
+                .call_function(template_addr, "new", args![])
         },
         want_list,
     )
