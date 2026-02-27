@@ -10,10 +10,10 @@ name = "guessing-game-cli"
 path = "src/main.rs"
 
 [dependencies]
-ootle-rs = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
-tari_ootle_transaction = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
-tari_ootle_common_types = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
-tari_template_lib_types = { git = "https://github.com/tari-project/tari-ootle.git", branch = "development" }
+ootle-rs = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.25.2" }
+tari_ootle_transaction = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.25.2" }
+tari_ootle_common_types = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.25.2" }
+tari_template_lib_types = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.25.2" }
 tari_crypto = "0.22"
 tari_utilities = "0.8"
 
