@@ -20,7 +20,7 @@ use tari_ootle_common_types::{Network, engine_types::transaction_receipt::Transa
 use tari_ootle_transaction::{TransactionBuilder, args};
 use tari_template_lib_types::{
     ComponentAddress, NonFungibleAddress, NonFungibleId, ResourceAddress, TemplateAddress,
-    constants::{ONE_XTR, XTR},
+    constants::{TARI, TARI_TOKEN},
 };
 use tari_utilities::{ByteArray, hex::Hex};
 
@@ -357,7 +357,7 @@ async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
     println!("  🏦 Account component: {account_addr}");
 
     let unsigned_tx = IFaucet::new(&provider)
-        .take_faucet_funds(10 * ONE_XTR)
+        .take_faucet_funds(10 * TARI)
         .pay_fee(500u64)
         .prepare()
         .await?;
@@ -426,7 +426,7 @@ async fn cmd_create(state_path: &Path, state: &mut State) -> anyhow::Result<()> 
         .await?;
 
     let account_addr = provider.default_signer_address().to_account_address();
-    let want_list = WantList::new().add_vault_for_resource(account_addr, XTR, true);
+    let want_list = WantList::new().add_vault_for_resource(account_addr, TARI_TOKEN, true);
 
     println!("🚀 Creating a new GuessingGame component...");
     let receipt = build_and_send(
@@ -451,7 +451,11 @@ async fn cmd_create(state_path: &Path, state: &mut State) -> anyhow::Result<()> 
         .diff_summary
         .upped
         .iter()
-        .find_map(|s| s.substate_id.as_resource_address().filter(|a| *a != XTR))
+        .find_map(|s| {
+            s.substate_id
+                .as_resource_address()
+                .filter(|a| *a != TARI_TOKEN)
+        })
         .ok_or_else(|| anyhow::anyhow!("No resource address in receipt"))?;
 
     println!(
@@ -501,7 +505,7 @@ async fn cmd_start_game(
         .resource_address
         .ok_or_else(|| anyhow::anyhow!("No resource address in state. Run `create` first."))?;
     let want_list = WantList::new()
-        .add_vault_for_resource(account_addr, XTR, true)
+        .add_vault_for_resource(account_addr, TARI_TOKEN, true)
         .add_vault_for_resource(*component_addr, resource_address, true)
         .add_specific_substate(resource_address, true);
 
@@ -618,7 +622,7 @@ async fn cmd_guess(state_path: &Path, state: &mut State, number: Option<u8>) -> 
     let payout_component = user.account_address;
 
     let want_list = WantList::new()
-        .add_vault_for_resource(account_addr, XTR, true)
+        .add_vault_for_resource(account_addr, TARI_TOKEN, true)
         .add_vault_for_resource(component_addr, resource_address, true);
 
     println!(
@@ -675,7 +679,7 @@ async fn create_user(
     println!("👤 Creating user '{name}' with account address {account_address}...");
 
     let unsigned_tx = IFaucet::new(&provider)
-        .take_faucet_funds(10 * ONE_XTR)
+        .take_faucet_funds(10 * TARI)
         .pay_fee(500u64)
         .prepare()
         .await?;
@@ -727,7 +731,7 @@ async fn cmd_end_game(state: &mut State) -> anyhow::Result<()> {
 
     let account_addr = provider.default_signer_address().to_account_address();
     let want_list = WantList::new()
-        .add_vault_for_resource(account_addr, XTR, true)
+        .add_vault_for_resource(account_addr, TARI_TOKEN, true)
         .add_vault_for_resource(component_addr, resource_address, true);
 
     let all_player_accounts = state
