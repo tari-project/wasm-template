@@ -145,7 +145,7 @@ fn default_indexer_url() -> String {
 
 fn default_indexer_url_for_network(network: &str) -> &'static str {
     match network {
-        "Esmeralda" => "http://217.182.93.35:50124/",
+        "Esmeralda" => "https://ootle-indexer-a.tari.com/",
         _ => "http://127.0.0.1:12500",
     }
 }
