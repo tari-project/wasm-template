@@ -8,7 +8,7 @@ tari_template_lib = "*"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 
 [dev-dependencies]
-tari_template_test_tooling = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.23.0" }
+tari_template_test_tooling = "0.26"
 
 {% if in_cargo_workspace == "false" %}
 [profile.release]

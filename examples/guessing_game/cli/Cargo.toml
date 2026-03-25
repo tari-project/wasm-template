@@ -11,9 +11,9 @@ path = "src/main.rs"
 
 [dependencies]
 ootle-rs = "0.1"
-tari_ootle_transaction = "0.25"
-tari_ootle_common_types = "0.25"
-tari_template_lib_types = "0.20"
+tari_ootle_transaction = "0.27"
+tari_ootle_common_types = "0.27"
+tari_template_lib_types = "0.22"
 tari_crypto = "0.22"
 tari_utilities = "0.8"
 
