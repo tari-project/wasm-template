@@ -1,4 +1,4 @@
-use tari_template_abi::rust::collections::BTreeMap;
+use std::collections::BTreeMap;
 use tari_template_lib::prelude::*;
 
 #[template]

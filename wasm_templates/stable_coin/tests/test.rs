@@ -1,10 +1,10 @@
-use tari_engine_types::ToByteType;
+use tari_template_test_tooling::ToByteType;
 use tari_template_lib::models::{ComponentAddress, Metadata, NonFungibleAddress, ResourceAddress};
 use tari_template_lib::types::Amount;
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::TemplateTest;
-use tari_transaction::{args, Transaction};
+use tari_template_test_tooling::transaction::{args, Transaction};
 
 const TEMPLATE_MODULE_NAME: &str = "{{project-name | upper_camel_case}}";
 
