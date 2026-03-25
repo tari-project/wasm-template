@@ -62,7 +62,7 @@ mod {{ project-name | snake_case }} {
         }
 
         pub fn mint_specific(&mut self, id: NonFungibleId) -> Bucket {
-            debug!(format!("Minting {}", id));
+            debug!("Minting {}", id);
             // These are characteristic of the NFT and are immutable
             let mut immutable_data = Metadata::new();
             immutable_data
@@ -82,7 +82,7 @@ mod {{ project-name | snake_case }} {
         }
 
         pub fn inc_brightness(&mut self, id: NonFungibleId, brightness: u32) {
-            debug!(format!("Increase brightness on {} by {}", id, brightness));
+            debug!("Increase brightness on {} by {}", id, brightness);
             self.with_data_mut(id, |data| {
                 data.brightness = data
                     .brightness
@@ -109,11 +109,7 @@ mod {{ project-name | snake_case }} {
                 bucket.resource_address() == self.resource_address,
                 "Cannot burn bucket not from this collection"
             );
-            debug!(format!(
-                "Burning bucket {} containing {}",
-                bucket,
-                bucket.amount()
-            ));
+            debug!("Burning bucket {} containing {}", bucket, bucket.amount());
             // This is all that's required, typically the template would not need to include a burn function because a
             // native instruction can be used instead
             bucket.burn();
