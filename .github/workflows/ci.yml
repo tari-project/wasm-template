@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test-templates:
+    name: Test Templates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install cargo-generate
+        run: cargo install cargo-generate
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run template tests
+        run: ./scripts/test-templates.sh

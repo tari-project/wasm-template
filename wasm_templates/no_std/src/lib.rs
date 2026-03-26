@@ -18,7 +18,7 @@ mod {{ project-name | snake_case }} {
     impl {{ project-name | upper_camel_case }} {
         pub fn new() -> Component<Self> {
             // TODO: implement constructor
-            // Component::new(Self { }).create()
+            Component::new(Self { }).create()
         }
     }
 }

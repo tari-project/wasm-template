@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 use std::fmt::Display;
-use tari_template_lib::models::{ComponentAddress, NonFungibleId};
+use tari_template_lib::types::{ComponentAddress, NonFungibleId};
 use tari_template_lib::types::Amount;
 
 #[derive(Clone, Debug, Copy, serde::Serialize, serde::Deserialize)]
@@ -45,7 +45,7 @@ impl Default for UserMutableData {
     fn default() -> Self {
         Self {
             is_blacklisted: false,
-            wrapped_exchange_limit: 1000.into(),
+            wrapped_exchange_limit: 1000u64.into(),
         }
     }
 }

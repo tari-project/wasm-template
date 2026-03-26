@@ -1,10 +1,10 @@
-use tari_template_test_tooling::ToByteType;
-use tari_template_lib::models::{ComponentAddress, Metadata, NonFungibleAddress, ResourceAddress};
+use tari_template_lib::types::{ComponentAddress, Metadata, NonFungibleAddress, ResourceAddress};
 use tari_template_lib::types::Amount;
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::TemplateTest;
 use tari_template_test_tooling::transaction::{args, Transaction};
+use tari_template_test_tooling::byte_type::ToByteType;
 
 const TEMPLATE_MODULE_NAME: &str = "{{project-name | upper_camel_case}}";
 
@@ -41,7 +41,7 @@ fn it_increases_and_decreases_supply() {
         Transaction::builder_localnet()
             .create_proof(admin_account, admin_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
-            .call_method(stable_coin_component, "decrease_supply", args![Amount(456)])
+            .call_method(stable_coin_component, "decrease_supply", args![456])
             .call_method(stable_coin_component, "total_supply", args![])
             .drop_all_proofs_in_workspace()
             .build_and_seal(&admin_key),
@@ -85,7 +85,7 @@ fn it_prevents_unauthorised_users_from_transacting() {
                 args![123, alice_account],
             )
             .put_last_instruction_output_on_workspace("badge")
-            .call_method(stable_coin_component, "withdraw", args![Amount(1234)])
+            .call_method(stable_coin_component, "withdraw", args![1234])
             .put_last_instruction_output_on_workspace("funds")
             // Deposit badge and funds into Alice's account
             .call_method(alice_account, "deposit", args![Workspace("badge")])
@@ -151,7 +151,7 @@ fn it_allows_users_to_transact() {
             .call_method(alice_account, "deposit", args![Workspace("alice_badge")])
             .call_method(bob_account, "deposit", args![Workspace("bob_badge")])
             // Withdraw for new stable coin customer
-            .call_method(stable_coin_component, "withdraw", args![Amount(1234)])
+            .call_method(stable_coin_component, "withdraw", args![1234])
             .put_last_instruction_output_on_workspace("funds")
             // Deposit badge and funds into Alice's account
             .call_method(alice_account, "deposit", args![Workspace("funds")])

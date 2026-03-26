@@ -1,7 +1,7 @@
 // Copyright 2024 The Tari Project
 // SPDX-License-Identifier: BSD-3-Clause
 
-use tari_template_lib::models::{ResourceAddress, Vault};
+use tari_template_lib::models::Vault;
 use tari_template_lib::types::Amount;
 use tari_template_lib::resource::ResourceManager;
 
@@ -30,9 +30,6 @@ pub struct WrappedExchangeToken {
 }
 
 impl WrappedExchangeToken {
-    pub(crate) fn resource_address(&self) -> ResourceAddress {
-        self.vault.resource_address()
-    }
 
     pub(crate) fn get_resource_manager(&self) -> ResourceManager {
         self.vault.get_resource_manager()
@@ -73,10 +70,10 @@ mod tests {
 
     #[test]
     fn test_div_rounded() {
-        assert_eq!(div_rounded(0, 5), 0);
-        assert_eq!(div_rounded(100, 0), 0);
-        assert_eq!(div_rounded(100, 5), 5);
-        assert_eq!(div_rounded(123, 5), 6);
-        assert_eq!(div_rounded(130, 5), 7);
+        assert_eq!(div_rounded(0u64, 5), 0);
+        assert_eq!(div_rounded(100u64, 0), 0);
+        assert_eq!(div_rounded(100u64, 5), 5);
+        assert_eq!(div_rounded(123u64, 5), 6);
+        assert_eq!(div_rounded(130u64, 5), 7);
     }
 }

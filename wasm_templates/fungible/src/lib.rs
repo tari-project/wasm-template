@@ -10,7 +10,7 @@ pub mod {{ project-name | snake_case }} {
 
     impl {{ project-name | upper_camel_case }} {
         pub fn mint(initial_supply: Amount, token_symbol: String) -> Component<Self> {
-            let coins = ResourceBuilder::fungible()
+            let coins = ResourceBuilder::public_fungible()
                 .with_token_symbol(&token_symbol)
                 .initial_supply(initial_supply);
 
