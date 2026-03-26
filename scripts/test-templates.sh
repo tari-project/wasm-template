@@ -21,7 +21,8 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 if [ -n "$OUTPUT_DIR" ]; then
     TMPDIR_BASE="$(cd "$OUTPUT_DIR" 2>/dev/null && pwd || mkdir -p "$OUTPUT_DIR" && cd "$OUTPUT_DIR" && pwd)"
 else
-    TMPDIR_BASE="${TMPDIR:-/tmp}/tari-template-tests"
+    TMPDIR_BASE="${TMPDIR:-/tmp}"
+    TMPDIR_BASE="${TMPDIR_BASE%/}/tari-template-tests"
 fi
 WASM_TARGET="wasm32-unknown-unknown"
 
@@ -96,14 +97,7 @@ mkdir -p "$TMPDIR_BASE"
 
 # Validate --template filter
 if [ -n "$FILTER" ]; then
-    found=false
-    for t in "${WASM_TEMPLATES[@]}"; do
-        if [ "$t" = "$FILTER" ]; then
-            found=true
-            break
-        fi
-    done
-    if ! $found; then
+    if ! [[ " ${WASM_TEMPLATES[*]} " =~ " $FILTER " ]]; then
         echo "Error: unknown template '$FILTER'"
         echo "Available templates: ${WASM_TEMPLATES[*]}"
         exit 1
@@ -144,16 +138,7 @@ for template in "${WASM_TEMPLATES[@]}"; do
         fail "$template (build)"
     fi
 
-    # Run tests if the template has them
-    has_tests=false
-    for t in "${TEMPLATES_WITH_TESTS[@]}"; do
-        if [ "$t" = "$template" ]; then
-            has_tests=true
-            break
-        fi
-    done
-
-    if $has_tests; then
+    if [[ " ${TEMPLATES_WITH_TESTS[*]} " =~ " $template " ]]; then
         log "Testing: $template"
         if (cd "$generated_dir" && cargo test 2>&1); then
             pass "$template (test)"

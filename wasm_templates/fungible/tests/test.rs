@@ -5,7 +5,7 @@ use tari_template_test_tooling::TemplateTest;
 #[test]
 fn test_fungible() {
     let mut template_test = TemplateTest::my_crate();
-    let initial_supply = Amount::from(1_000_000_000_000u64);
+    let initial_supply = Amount::new(1_000_000_000_000);
     let fungible_component: ComponentAddress =
         template_test.call_function("{{ project-name | upper_camel_case }}", "mint", args![initial_supply, "TEST"], vec![]);
 
