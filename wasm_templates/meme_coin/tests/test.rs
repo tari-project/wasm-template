@@ -138,7 +138,7 @@ fn test_memecoin_owner_transfer_coins() {
         .unwrap();
     assert_eq!(
         memecoin_balance,
-        meme_coin_result.initial_supply - withdraw_amount.into()
+        meme_coin_result.initial_supply - withdraw_amount
     );
 }
 

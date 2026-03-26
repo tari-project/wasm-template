@@ -66,7 +66,7 @@ mod asd {
             // apply the fee to the input bucket
             // so the user will get a lesser amount of tokens than the theoretical (for the gain of the LP holders)
             let input_bucket_balance = input_bucket.amount();
-            let effective_input_balance = input_bucket_balance - (input_bucket_balance * self.fee.into()) / 1000u64.into();
+            let effective_input_balance = input_bucket_balance - (input_bucket_balance * Amount::from(self.fee)) / Amount::from(1000u64);
 
             // recalculate the new vault balances for the swap
             // constant product AMM formula is "k = a * b"

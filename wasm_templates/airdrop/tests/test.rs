@@ -1,14 +1,14 @@
 use tari_template_test_tooling::transaction::{Transaction, args};
-use tari_template_test_tooling::engine_types::commit_result::RejectReason;
+use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_lib::types::NonFungibleAddress;
-use tari_template_lib::prelude::{Amount, Bucket, ComponentAddress};
+use tari_template_lib::prelude::{Amount, ComponentAddress};
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::TemplateTest;
 
 struct AirdropResult {
-    account_address: ComponentAddress,
-    account_proof: NonFungibleAddress,
-    account_secret: RistrettoSecretKey,
+    _account_address: ComponentAddress,
+    _account_proof: NonFungibleAddress,
+    _account_secret: RistrettoSecretKey,
     airdrop_address: ComponentAddress,
 }
 
@@ -30,9 +30,9 @@ fn airdrop(test: &mut TemplateTest) -> AirdropResult {
         .unwrap();
 
     AirdropResult {
-        account_address: account_component,
-        account_proof: owner_proof,
-        account_secret: account_secret_key,
+        _account_address: account_component,
+        _account_proof: owner_proof,
+        _account_secret: account_secret_key,
         airdrop_address,
     }
 }
@@ -55,11 +55,7 @@ fn test_airdrop_add_recipient_airdrop_already_started() {
         vec![owner_proof.clone()],
     );
 
-    assert!(matches!(result, RejectReason::ExecutionFailure(_)));
-
-    if let RejectReason::ExecutionFailure(reason) = result {
-        assert_eq!(reason, "Panic! Airdrop already started");
-    }
+    assert_reject_reason(result, "Airdrop already started");
 }
 
 #[test]
@@ -68,7 +64,7 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
     let airdrop_result = airdrop(&mut test);
 
     // open airdrop
-    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
+    let (_account_component, owner_proof, account_secret_key) = test.create_funded_account();
     let result = test.execute_expect_success(
         Transaction::builder_localnet()
             .call_method(
@@ -82,8 +78,8 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
     assert!(result.finalize.result.is_accept());
 
     // add recipients
-    for i in 0..100 {
-        let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
+    for _ in 0..100 {
+        let (_account_component, owner_proof, account_secret_key) = test.create_funded_account();
         let result = test.execute_expect_success(
             Transaction::builder_localnet()
                 .call_method(
@@ -110,11 +106,7 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
         vec![owner_proof.clone()],
     );
 
-    assert!(matches!(result, RejectReason::ExecutionFailure(_)));
-
-    if let RejectReason::ExecutionFailure(reason) = result {
-        assert_eq!(reason, "Panic! Airdrop allow list is full");
-    }
+    assert_reject_reason(result, "Airdrop allow list is full");
 }
 
 #[test]
@@ -148,7 +140,7 @@ fn test_airdrop_open_airdrop_failure() {
     let airdrop_result = airdrop(&mut test);
 
     // open airdrop
-    let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
+    let (_account_component, owner_proof, account_secret_key) = test.create_funded_account();
     let result = test.execute_expect_failure(
         Transaction::builder_localnet()
             .call_method(
@@ -164,11 +156,7 @@ fn test_airdrop_open_airdrop_failure() {
             .build_and_seal(&account_secret_key),
         vec![owner_proof.clone()],
     );
-    assert!(matches!(result, RejectReason::ExecutionFailure(_)));
-
-    if let RejectReason::ExecutionFailure(reason) = result {
-        assert_eq!(reason, "Panic! Airdrop already open");
-    }
+    assert_reject_reason(result, "Airdrop already open");
 }
 
 #[test]
@@ -291,10 +279,7 @@ fn test_airdrop_claim_any_airdrop_not_open() {
         vec![owner_proof.clone()],
     );
 
-    assert!(matches!(reject_reason, RejectReason::ExecutionFailure(_)));
-    if let RejectReason::ExecutionFailure(reason) = reject_reason {
-        assert!(reason.contains("Airdrop is not open"));
-    }
+    assert_reject_reason(reject_reason, "Airdrop is not open");
 }
 
 #[test]
@@ -332,14 +317,5 @@ fn test_airdrop_claim_any_already_claimed() {
         vec![owner_proof.clone()],
     );
 
-    assert!(matches!(reject_reason, RejectReason::ExecutionFailure(_)));
-    if let RejectReason::ExecutionFailure(reason) = reject_reason {
-        assert!(reason.contains(
-            format!(
-                "Address {} is not in allow list or has already been claimed",
-                account_component
-            )
-                .as_str()
-        ));
-    }
+    assert_reject_reason(reject_reason, "is not in allow list or has already been claimed");
 }
