@@ -28,7 +28,7 @@ fn test_fungible() {
     let receiver_balance = result.finalize.execution_results[6].decode::<Amount>().unwrap();
     assert_eq!(
         fungible_account_balance,
-        initial_supply - 100u64.into()
+        initial_supply - Amount::new(100)
     );
     assert_eq!(receiver_balance, 100);
 }
