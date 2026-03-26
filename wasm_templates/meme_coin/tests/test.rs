@@ -96,7 +96,7 @@ fn test_memecoin_owner_transfer_coins() {
     let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
     let (target_account_addr, _, _) = template_test.create_empty_account();
 
-    let withdraw_amount = 10;
+    let withdraw_amount = 10u64;
 
     let result = template_test.execute_expect_success(
         Transaction::builder_localnet()

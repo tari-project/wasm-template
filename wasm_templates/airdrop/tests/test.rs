@@ -1,6 +1,6 @@
 use tari_template_test_tooling::transaction::{Transaction, args};
 use tari_template_test_tooling::engine_types::commit_result::RejectReason;
-use tari_template_lib::models::NonFungibleAddress;
+use tari_template_lib::types::NonFungibleAddress;
 use tari_template_lib::prelude::{Amount, Bucket, ComponentAddress};
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::TemplateTest;

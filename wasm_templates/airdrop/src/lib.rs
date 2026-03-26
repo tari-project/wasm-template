@@ -54,7 +54,7 @@ pub mod {{ project-name | snake_case }} {
             );
 
             self.claimed_count += 1;
-            self.vault.withdraw(1)
+            self.vault.withdraw(1u64)
         }
 
         pub fn claim_specific(&mut self, address: ComponentAddress, id: NonFungibleId) -> Bucket {

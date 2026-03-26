@@ -1,5 +1,5 @@
 use tari_template_test_tooling::transaction::{args, Transaction};
-use tari_template_lib::prelude::{Amount, ComponentAddress, call_args};
+use tari_template_lib::prelude::{Amount, ComponentAddress, };
 use tari_template_test_tooling::TemplateTest;
 
 #[test]
@@ -7,7 +7,7 @@ fn test_fungible() {
     let mut template_test = TemplateTest::my_crate();
     let initial_supply = Amount::from(1_000_000_000_000u64);
     let fungible_component: ComponentAddress =
-        template_test.call_function("{{ project-name | upper_camel_case }}", "mint", call_args![initial_supply, "TEST"], vec![]);
+        template_test.call_function("{{ project-name | upper_camel_case }}", "mint", args![initial_supply, "TEST"], vec![]);
 
     let (receiver_address, receiver_proof, receiver_secret_key) = template_test.create_empty_account();
 
@@ -28,7 +28,7 @@ fn test_fungible() {
     let receiver_balance = result.finalize.execution_results[6].decode::<Amount>().unwrap();
     assert_eq!(
         fungible_account_balance,
-        initial_supply - 100.into()
+        initial_supply - 100u64.into()
     );
     assert_eq!(receiver_balance, 100);
 }

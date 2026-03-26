@@ -16,7 +16,7 @@ pub mod {{ project-name | snake_case }} {
             metadata: Metadata,
         ) -> Component<Self> {
             // initial coin with supply
-            let mut coins = ResourceBuilder::fungible()
+            let mut coins = ResourceBuilder::public_fungible()
                 .with_token_symbol(&token_symbol)
                 .with_metadata(metadata)
                 .with_owner_rule(OwnerRule::OwnedBySigner);

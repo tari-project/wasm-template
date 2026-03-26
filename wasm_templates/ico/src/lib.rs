@@ -16,7 +16,7 @@ mod {{ project-name | snake_case }}_ico {
             initial_supply: Amount,
             price: Amount,
         ) -> (Component<Self>, Bucket) {
-            let coins = ResourceBuilder::fungible()
+            let coins = ResourceBuilder::public_fungible()
                 .with_token_symbol(symbol)
                 .with_owner_rule(OwnerRule::OwnedBySigner)
                 .initial_supply(initial_supply);

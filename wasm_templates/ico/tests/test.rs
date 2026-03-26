@@ -1,5 +1,6 @@
 use tari_template_test_tooling::engine_types::commit_result::RejectReason;
-use tari_template_lib::models::{Bucket, ComponentAddress, NonFungibleAddress};
+use tari_template_lib::models::Bucket;
+use tari_template_lib::types::{ComponentAddress, NonFungibleAddress};
 use tari_template_lib::types::Amount;
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::transaction::{args, Transaction};
@@ -292,5 +293,5 @@ fn test_owner_withdraw() {
         .decode::<Amount>()
         .unwrap();
 
-    assert_eq!(owner_initial_xtr_balance, owner_final_xtr_balance - 100.into());
+    assert_eq!(owner_initial_xtr_balance, owner_final_xtr_balance - 100u64.into());
 }

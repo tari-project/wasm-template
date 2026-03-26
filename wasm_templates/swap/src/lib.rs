@@ -8,7 +8,7 @@ mod asd {
     // Constant product AMM
     pub struct {{ project-name | upper_camel_case }}Pool {
         pools: BTreeMap<ResourceAddress, Vault>,
-        lp_resource: ResourceAddress,
+        lp_resource: ResourceManager,
         fee: u16,
     }
 
@@ -32,11 +32,11 @@ mod asd {
 
             // create the lp resource
             // TODO: add lp resource minting/burning security, only this component should be allowed
-            let lp_resource = ResourceBuilder::fungible().with_token_symbol("LP").build();
+            let lp_resource = ResourceBuilder::public_fungible().with_token_symbol("LP").build();
 
             Self {
                 pools,
-                lp_resource,
+                lp_resource: ResourceManager::get(lp_resource),
                 fee,
             }
         }
@@ -66,7 +66,7 @@ mod asd {
             // apply the fee to the input bucket
             // so the user will get a lesser amount of tokens than the theoretical (for the gain of the LP holders)
             let input_bucket_balance = input_bucket.amount();
-            let effective_input_balance = input_bucket_balance - (input_bucket_balance * self.fee.into()) / 1000.into();
+            let effective_input_balance = input_bucket_balance - (input_bucket_balance * self.fee.into()) / 1000u64.into();
 
             // recalculate the new vault balances for the swap
             // constant product AMM formula is "k = a * b"
@@ -111,11 +111,11 @@ mod asd {
             let new_lp_amount = a_ratio * a_amount + b_ratio * b_amount;
 
             // mint and return the new lp tokens
-            self.lp_resource.get_resource_manager().mint_fungible(new_lp_amount)
+            self.lp_resource.mint_fungible(new_lp_amount)
         }
 
         pub fn remove_liquidity(&mut self, lp_bucket: Bucket) -> (Bucket, Bucket) {
-            assert!(lp_bucket.resource_address() == self.lp_resource, "Invalid LP resource");
+            assert_eq!(lp_bucket.resource_address(), self.lp_resource.resource_address(), "Invalid LP resource");
 
             // get the pool information
             let a_resource = self.get_a_resource();
@@ -167,19 +167,15 @@ mod asd {
         pub fn get_pool_ratio(&self, resource: ResourceAddress, amount: Amount) -> Amount {
             let balance = self.get_pool_balance(resource);
 
-            if balance == 0 {
+            if balance.is_zero() {
                 Amount::ONE
             } else {
                 amount / balance
             }
         }
 
-        pub fn lp_resource(&self) -> ResourceAddress {
-            self.lp_resource
-        }
-
         pub fn lp_total_supply(&self) -> Amount {
-            ResourceManager::get(self.lp_resource).total_supply()
+            self.lp_resource.total_supply()
         }
 
         pub fn fee(&self) -> u16 {

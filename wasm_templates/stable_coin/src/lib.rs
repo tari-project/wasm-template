@@ -43,8 +43,7 @@ mod template {
 
             // Create admin access rules
             let admin_resource = admin_badge.resource_address();
-            let require_admin =
-                AccessRule::Restricted(Require(RequireRule::Require(admin_resource.into())));
+            let require_admin = rule!(resource(admin_resource));
 
             // Create user badge resource
             let user_auth_resource = ResourceBuilder::non_fungible()
@@ -79,7 +78,7 @@ mod template {
 
             // Create tokens resource with initial supply
             let wrapped_token = if enable_wrapped_token {
-                let wrapped_resource = ResourceBuilder::fungible()
+                let wrapped_resource = ResourceBuilder::public_fungible()
                     .with_metadata(token_metadata)
                     .with_token_symbol(format!("w{token_symbol}"))
                     // Access rules

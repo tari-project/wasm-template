@@ -8,7 +8,7 @@ edition = "2024"
 
 [dependencies]
 tari_template_lib = { version = "0.22" }
-serde = { version = "1.0.143", default-features = false, features = ["derive", "alloc"] }
+serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
 tari_template_test_tooling = "0.26"
@@ -19,14 +19,8 @@ opt-level = 's'     # Optimize for size.
 lto = true          # Enable Link Time Optimization.
 codegen-units = 1   # Reduce number of codegen units to increase optimizations.
 panic = 'abort'     # Abort on panic.
-strip = "debuginfo" # Strip debug info.
+strip = true
 {% endif %}
 
 [lib]
 crate-type = ["cdylib"]
-
-[dev-dependencies]
-log = "*"
-tari_template_test_tooling = {git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.23.0" }
-tari_engine_types = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.23.0"}
-tari_transaction = { git = "https://github.com/tari-project/tari-ootle.git", tag = "v0.23.0" }

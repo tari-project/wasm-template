@@ -1,5 +1,6 @@
 use tari_template_test_tooling::transaction::{args, Transaction};
-use tari_template_lib::models::{Bucket, ComponentAddress, NonFungibleAddress, ResourceAddress};
+use tari_template_lib::models::Bucket;
+use tari_template_lib::types::{ComponentAddress, NonFungibleAddress, ResourceAddress};
 use tari_template_lib::types::{Amount, Metadata, amount};
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
