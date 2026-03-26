@@ -1,6 +1,6 @@
-use tari_template_test_tooling::engine_types::commit_result::RejectReason;
 use tari_template_lib::types::{Amount, ComponentAddress, amount, NonFungibleAddress, Metadata};
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
+use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::TemplateTest;
 use tari_template_test_tooling::transaction::{args, Transaction};
 
@@ -77,17 +77,7 @@ fn test_memecoin_owner_only_allowed_method() {
             .build_and_seal(&account_secret_key),
         vec![owner_proof.clone()],
     );
-    assert!(matches!(reject_reason, RejectReason::ExecutionFailure(_)));
-    if let RejectReason::ExecutionFailure(reason) = reject_reason {
-        assert!(reason.starts_with("Access Denied:"));
-        assert!(reason.contains(
-            format!(
-                "call component method 'burn' on {}",
-                meme_coin_result.meme_coin_component
-            )
-                .as_str()
-        ));
-    }
+    assert_reject_reason(reject_reason, "call component method 'burn'");
 }
 
 #[test]

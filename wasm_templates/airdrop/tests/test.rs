@@ -79,7 +79,7 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
 
     // add recipients
     for _ in 0..100 {
-        let (_account_component, owner_proof, account_secret_key) = test.create_funded_account();
+        let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
         let result = test.execute_expect_success(
             Transaction::builder_localnet()
                 .call_method(
