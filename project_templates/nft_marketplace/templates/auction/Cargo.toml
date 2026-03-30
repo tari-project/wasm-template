@@ -17,6 +17,22 @@ lto = true          # Enable Link Time Optimization.
 codegen-units = 1   # Reduce number of codegen units to increase optimizations.
 panic = 'abort'     # Abort on panic.
 strip = "debuginfo" # Strip debug info.
+
+# Wasmer and Cranelift are extremely slow when compiled in debug mode (~10x slower),
+# which makes template tests painfully slow. Optimize these specific crates even in
+# dev/test builds.
+[profile.dev.package.wasmer]
+opt-level = 2
+[profile.dev.package.wasmer-compiler]
+opt-level = 2
+[profile.dev.package.wasmer-compiler-cranelift]
+opt-level = 2
+[profile.dev.package.cranelift-codegen]
+opt-level = 2
+[profile.dev.package.cranelift-frontend]
+opt-level = 2
+[profile.dev.package.cranelift-entity]
+opt-level = 2
 {% endif %}
 
 [lib]
