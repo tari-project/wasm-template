@@ -20,7 +20,7 @@ use tari_ootle_common_types::{Network, engine_types::transaction_receipt::Transa
 use tari_ootle_transaction::{TransactionBuilder, args};
 use tari_template_lib_types::{
     ComponentAddress, NonFungibleAddress, NonFungibleId, ResourceAddress, TemplateAddress,
-    constants::{TARI, TARI_TOKEN},
+    constants::{ TARI_TOKEN},
 };
 use tari_utilities::{ByteArray, hex::Hex};
 
@@ -357,7 +357,7 @@ async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
     println!("  🏦 Account component: {account_addr}");
 
     let unsigned_tx = IFaucet::new(&provider)
-        .take_faucet_funds(10 * TARI)
+        .take_faucet_funds()
         .pay_fee(500u64)
         .prepare()
         .await?;
@@ -663,7 +663,7 @@ async fn create_user(
     state: &mut State,
     name_arg: Option<String>,
 ) -> anyhow::Result<()> {
-    let name = name_arg.unwrap_or_else(|| generate_name());
+    let name = name_arg.unwrap_or_else(generate_name);
     let network = parse_network(&state.network)?;
     let secret = OotleSecretKey::random(network);
     let wallet = OotleWallet::from(PrivateKeyProvider::new(secret.clone()));
@@ -679,7 +679,7 @@ async fn create_user(
     println!("👤 Creating user '{name}' with account address {account_address}...");
 
     let unsigned_tx = IFaucet::new(&provider)
-        .take_faucet_funds(10 * TARI)
+        .take_faucet_funds()
         .pay_fee(500u64)
         .prepare()
         .await?;
@@ -787,7 +787,7 @@ async fn cmd_end_game(state: &mut State) -> anyhow::Result<()> {
     }
     println!(
         "🏆 The number was {}.",
-        number.unwrap_or_else(|| "unknown?")
+        number.unwrap_or("unknown?")
     );
     println!("🏆 Round ended.");
 
