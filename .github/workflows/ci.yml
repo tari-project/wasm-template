@@ -9,6 +9,31 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  lint-examples:
+    name: Lint Examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            examples/guessing_game/template
+            examples/guessing_game/cli
+
+      - name: Clippy (template - wasm)
+        working-directory: examples/guessing_game/template
+        run: cargo clippy --target wasm32-unknown-unknown -- -D warnings
+
+      - name: Clippy (cli)
+        working-directory: examples/guessing_game/cli
+        run: cargo clippy -- -D warnings
+
   test-templates:
     name: Test Templates
     runs-on: ubuntu-latest
