@@ -1,0 +1,3 @@
+template-address = "template_87fad2c8a3ff789a9b638a6d490738f950faa1e8a83960e7c334da3e66959314"
+[network]
+wallet-daemon-jrpc-address = "http://127.0.0.1:5100/json_rpc"
