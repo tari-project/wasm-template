@@ -6,7 +6,7 @@ edition = "2024"
 authors = ["{{authors}}"]
 
 [dependencies]
-tari_template_lib = { version = "0.24" }
+tari_template_lib = { version = "0.25.0" }
 serde = { version = "1", default-features = false, features = ["derive"] }
 
 [dev-dependencies]
