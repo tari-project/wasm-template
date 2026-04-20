@@ -15,7 +15,7 @@ logo_url = "https://ootle.tari.com/favicon.png"
 tari_template_lib = { version = "0.25" }
 
 [dev-dependencies]
-tari_template_test_tooling = "0.28"
+tari_template_test_tooling = "0.28.12"
 
 [lib]
 crate-type = ["cdylib"]
@@ -25,7 +25,7 @@ opt-level = 's'     # Optimize for size.
 lto = true          # Enable Link Time Optimization.
 codegen-units = 1   # Reduce number of codegen units to increase optimizations.
 panic = 'abort'     # Abort on panic.
-strip = "debuginfo" # Strip debug info.
+strip = true        # Strip
 
 # Wasmer and Cranelift are extremely slow when compiled in debug mode (~10x slower),
 # which makes template tests painfully slow. Optimize these specific crates even in
