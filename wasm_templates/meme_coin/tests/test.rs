@@ -6,13 +6,13 @@ use tari_template_test_tooling::transaction::{args, Transaction};
 
 struct CreateMemeCoinResult {
     pub initial_supply: Amount,
-    pub admin_account_component: ComponentAddress,
+    pub _admin_account_component: ComponentAddress,
     pub admin_account_proof: NonFungibleAddress,
     pub admin_account_secret: RistrettoSecretKey,
     pub meme_coin_component: ComponentAddress,
 }
 
-fn create_meme_coin(test: &mut TemplateTest, name: &str) -> CreateMemeCoinResult {
+fn create_meme_coin(test: &mut TemplateTest) -> CreateMemeCoinResult {
     let initial_supply = 1_000_000_000_000u64;
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
 
@@ -25,7 +25,7 @@ fn create_meme_coin(test: &mut TemplateTest, name: &str) -> CreateMemeCoinResult
                 "create",
                 args![
                     initial_supply,
-                    name.to_string(),
+                    "meme",
                     None::<String>,
                     Metadata::new()
                 ],
@@ -40,7 +40,7 @@ fn create_meme_coin(test: &mut TemplateTest, name: &str) -> CreateMemeCoinResult
 
     CreateMemeCoinResult {
         initial_supply: initial_supply.into(),
-        admin_account_component: account_component,
+        _admin_account_component: account_component,
         admin_account_proof: owner_proof,
         admin_account_secret: account_secret_key,
         meme_coin_component: coin_component,
@@ -50,7 +50,7 @@ fn create_meme_coin(test: &mut TemplateTest, name: &str) -> CreateMemeCoinResult
 #[test]
 fn test_memecoin_owner_only_allowed_method() {
     let mut template_test = TemplateTest::my_crate();
-    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
+    let meme_coin_result = create_meme_coin(&mut template_test);
 
     // make sure that admin only method is working
     let result = template_test.execute_expect_success(
@@ -83,7 +83,7 @@ fn test_memecoin_owner_only_allowed_method() {
 #[test]
 fn test_memecoin_owner_transfer_coins() {
     let mut template_test = TemplateTest::my_crate();
-    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
+    let meme_coin_result = create_meme_coin(&mut template_test);
     let (target_account_addr, _, _) = template_test.create_empty_account();
 
     let withdraw_amount = 10u64;
@@ -135,7 +135,7 @@ fn test_memecoin_owner_transfer_coins() {
 #[test]
 fn test_memecoin_owner_burn() {
     let mut template_test = TemplateTest::my_crate();
-    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
+    let meme_coin_result = create_meme_coin(&mut template_test);
 
     let burned_amount = amount![100];
 
@@ -164,7 +164,7 @@ fn test_memecoin_owner_burn() {
 #[test]
 fn test_memecoin_owner_mint() {
     let mut template_test = TemplateTest::my_crate();
-    let meme_coin_result = create_meme_coin(&mut template_test, "{{ project-name | shouty_kebab_case }}");
+    let meme_coin_result = create_meme_coin(&mut template_test);
 
     let deposited_amount = amount![100];
 

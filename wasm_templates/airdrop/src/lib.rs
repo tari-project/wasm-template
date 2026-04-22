@@ -15,7 +15,7 @@ pub mod {{ project-name | snake_case }} {
     impl {{ project-name | upper_camel_case }} {
         pub fn new() -> Component<Self> {
             let bucket = ResourceBuilder::non_fungible()
-                .with_token_symbol("{{ project-name | shouty_kebab_case }}")
+                .with_token_symbol("AIR")
                 .with_owner_rule(OwnerRule::OwnedBySigner)
                 .initial_supply((1..=100).map(NonFungibleId::from_u32));
 
