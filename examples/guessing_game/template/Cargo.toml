@@ -6,16 +6,17 @@ edition = "2024"
 description = "A guessing game"
 
 [package.metadata.tari-template]
-tags = ["game", "example", "fun", "guess", "random"]
+tags = ["game", "fun", "example"]
 category = "game"
 documentation = "https://ootle.tari.com/guides/build-a-guessing-game/"
 logo_url = "https://ootle.tari.com/favicon.png"
+homepage = "https://ootle.tari.com/"
 
 [dependencies]
 tari_template_lib = { version = "0.25" }
 
 [dev-dependencies]
-tari_template_test_tooling = "0.28.12"
+tari_template_test_tooling = "0.29"
 
 [lib]
 crate-type = ["cdylib"]

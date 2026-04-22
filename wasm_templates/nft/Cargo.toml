@@ -7,11 +7,11 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tari_template_lib = { version = "0.25.0" }
+tari_template_lib = { version = "0.25" }
 serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
-tari_template_test_tooling = "0.28"
+tari_template_test_tooling = "0.29"
 
 {% if in_cargo_workspace == "false" %}
 [profile.release]

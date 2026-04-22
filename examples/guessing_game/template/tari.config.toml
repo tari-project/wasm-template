@@ -1,3 +1,10 @@
-template-address = "template_87fad2c8a3ff789a9b638a6d490738f950faa1e8a83960e7c334da3e66959314"
-[network]
-wallet-daemon-jrpc-address = "http://127.0.0.1:5100/json_rpc"
+default-network = "esmeralda"
+
+[networks.localnet]
+wallet-daemon-url = "http://127.0.0.1:5100/json_rpc"
+metadata-server-url = "http://localhost:3000/"
+
+[networks.esmeralda]
+wallet-daemon-url = "http://127.0.0.1:5100/json_rpc"
+metadata-server-url = "https://ootle-templates-esme.tari.com/"
+template-address = "template_6c3644b95c31650e0bdad163c24541fb8b29cec332be5c378babe5642764c9ef"
