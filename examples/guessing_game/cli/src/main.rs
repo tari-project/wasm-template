@@ -4,7 +4,7 @@ use crate::want_list::WantList;
 use clap::{CommandFactory, Parser, Subcommand};
 use dialoguer::{Input, Select};
 use ootle_rs::{
-    ToAccountAddress, TransactionRequest,
+    Network, ToAccountAddress, TransactionRequest,
     builtin_templates::{UnsignedTransactionBuilder, faucet::IFaucet},
     key_provider::PrivateKeyProvider,
     keys::{HasViewOnlyKeySecret, OotleSecretKey},
@@ -16,11 +16,11 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use tari_crypto::ristretto::RistrettoSecretKey;
 use tari_ootle_common_types::displayable::Displayable;
-use tari_ootle_common_types::{Network, engine_types::transaction_receipt::TransactionReceipt};
+use tari_ootle_common_types::engine_types::transaction_receipt::TransactionReceipt;
 use tari_ootle_transaction::{TransactionBuilder, args};
 use tari_template_lib_types::{
     ComponentAddress, NonFungibleAddress, NonFungibleId, ResourceAddress, TemplateAddress,
-    constants::{ TARI_TOKEN},
+    constants::TARI_TOKEN,
 };
 use tari_utilities::{ByteArray, hex::Hex};
 
@@ -785,10 +785,7 @@ async fn cmd_end_game(state: &mut State) -> anyhow::Result<()> {
     } else {
         println!("🏆 No winner this round.");
     }
-    println!(
-        "🏆 The number was {}.",
-        number.unwrap_or("unknown?")
-    );
+    println!("🏆 The number was {}.", number.unwrap_or("unknown?"));
     println!("🏆 Round ended.");
 
     Ok(())
