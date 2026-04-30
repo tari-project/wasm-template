@@ -225,7 +225,7 @@ fn setup() -> TestSetup {
         .up_iter()
         .find(|(id, s)| {
             id.is_component()
-                && s.substate_value().component().unwrap().template_address == template
+                && *s.substate_value().component().unwrap().template_address() == template
         })
         .map(|(id, _)| id.as_component_address().unwrap())
         .unwrap();
