@@ -13,9 +13,9 @@ path = "src/main.rs"
 ootle-rs = "0.6"
 tari_ootle_transaction = "0.30"
 tari_ootle_common_types = "0.30"
-tari_template_lib_types = "0.25"
-tari_crypto = "0.22"
-tari_utilities = "0.8"
+tari_template_lib_types = "0.26"
+tari_crypto = "0.23"
+tari_utilities = "0.10"
 
 random-name = "0.1"
 

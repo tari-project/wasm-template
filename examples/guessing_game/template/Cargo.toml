@@ -13,7 +13,7 @@ logo_url = "https://ootle.tari.com/favicon.png"
 homepage = "https://ootle.tari.com/"
 
 [dependencies]
-tari_template_lib = { version = "0.25" }
+tari_template_lib = { version = "0.26" }
 
 [dev-dependencies]
 tari_template_test_tooling = "0.30"
@@ -45,4 +45,4 @@ opt-level = 2
 opt-level = 2
 
 [build-dependencies]
-tari_ootle_template_build = "0.5"
+tari_ootle_template_build = "0.6"

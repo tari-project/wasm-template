@@ -7,7 +7,7 @@ use ootle_rs::{
     Network, ToAccountAddress, TransactionRequest,
     builtin_templates::{UnsignedTransactionBuilder, faucet::IFaucet},
     key_provider::PrivateKeyProvider,
-    keys::{HasViewOnlyKeySecret, OotleSecretKey},
+    keys::OotleSecretKey,
     provider::{IndexerProvider, Provider, ProviderBuilder, WalletProvider},
     wallet::OotleWallet,
 };
