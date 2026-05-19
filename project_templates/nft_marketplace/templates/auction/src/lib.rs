@@ -1,11 +1,13 @@
 use tari_template_lib::prelude::*;
 
 /// TODO: create constant in template_lib for account template address (and other builtin templates)
-pub const ACCOUNT_TEMPLATE_ADDRESS: Hash = Hash::from_array([0u8; 32]);
+pub const ACCOUNT_TEMPLATE_ADDRESS: TemplateAddress = TemplateAddress::from_array([0u8; 32]);
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, minicbor::Encode, minicbor::Decode, minicbor::CborLen)]
 pub struct Bid {
+    #[n(0)]
     bidder_account: ComponentAddress,
+    #[n(1)]
     vault: Vault,
 }
 
@@ -76,8 +78,10 @@ mod nft_marketplace {
             // create the bucket with the badge to allow the seller to cancel the auction at any time
             // we make sure that only the initial badge will be minted
             let seller_badge_bucket = ResourceBuilder::non_fungible()
-                .mintable(AccessRule::DenyAll)
-                .burnable(AccessRule::AllowAll)
+                // LOCKED makes each rule immutable after creation — fine for the
+                // single-mint badge lifecycle here.
+                .mintable(AccessRule::DenyAll, LOCKED)
+                .burnable(AccessRule::AllowAll, LOCKED)
                 .initial_supply_with_data(Some((NonFungibleId::random(), (&(), &()))));
             let seller_badge_resource = seller_badge_bucket.resource_address();
 
@@ -106,8 +110,8 @@ mod nft_marketplace {
 
             assert_eq!(
                 payment.resource_address(),
-                XTR,
-                "Invalid payment resource, the marketplace only accepts Tari (XTR) tokens"
+                TARI_TOKEN,
+                "Invalid payment resource, the marketplace only accepts Tari tokens"
             );
 
             // validate that the bidder account is really an account
@@ -130,7 +134,7 @@ mod nft_marketplace {
                 let previous_bidder_account = ComponentManager::get(highest_bid.bidder_account);
                 let refund_bucket = highest_bid.vault.withdraw_all();
                 // TODO: improve call method generics when there is no return value
-                previous_bidder_account.call::<_, ()>("deposit".to_string(), call_args![refund_bucket]);
+                previous_bidder_account.invoke("deposit", args![refund_bucket]);
 
                 // update the highest bidder in the auction
                 highest_bid.bidder_account = bidder_account_address;
@@ -187,7 +191,7 @@ mod nft_marketplace {
             if let Some(highest_bid) = &mut self.highest_bid {
                 let bidder_account = ComponentManager::get(highest_bid.bidder_account);
                 let refund_bucket = highest_bid.vault.withdraw_all();
-                bidder_account.call::<_, ()>("deposit".to_string(), call_args![refund_bucket]);
+                bidder_account.invoke("deposit", args![refund_bucket]);
                 // TODO: removing the bid ends up in a OrphanedSubstate error in the
                 //       but we need to mark that the auction is finished somehow to prevent new bids
                 // self.highest_bid = None;
@@ -199,7 +203,7 @@ mod nft_marketplace {
             // send the NFT back to the seller
             let seller_account = ComponentManager::get(self.seller_address);
             let nft_bucket = self.vault.withdraw_all();
-            seller_account.call::<_, ()>("deposit".to_string(), call_args![nft_bucket]);
+            seller_account.invoke("deposit", args![nft_bucket]);
         }
 
         fn assert_component_is_account(component_address: ComponentAddress) {
@@ -218,14 +222,14 @@ mod nft_marketplace {
             if let Some(highest_bid) = &mut self.highest_bid {
                 // deposit the nft to the bidder
                 let bidder_account = ComponentManager::get(highest_bid.bidder_account);
-                bidder_account.call::<_, ()>("deposit".to_string(), call_args![nft_bucket]);
+                bidder_account.invoke("deposit", args![nft_bucket]);
 
                 // deposit the funds to the seller
                 let payment = highest_bid.vault.withdraw_all();
-                seller_account.call::<_, ()>("deposit".to_string(), call_args![payment]);
+                seller_account.invoke("deposit", args![payment]);
             } else {
                 // no bidders in the auction, so just return the NFT to the seller
-                seller_account.call::<_, ()>("deposit".to_string(), call_args![nft_bucket]);
+                seller_account.invoke("deposit", args![nft_bucket]);
             }
 
             // TODO: burn the seller badge to avoid it being used again (should we recall it first?)

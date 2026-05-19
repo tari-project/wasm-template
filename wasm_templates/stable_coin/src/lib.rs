@@ -45,12 +45,14 @@ mod template {
             let admin_resource = admin_badge.resource_address();
             let require_admin = rule!(resource(admin_resource));
 
-            // Create user badge resource
+            // Create user badge resource. OWNER lets the resource owner (this component,
+            // gated by the admin badge) update each rule later — swap to LOCKED if you want
+            // the rules to be permanently fixed at creation.
             let user_auth_resource = ResourceBuilder::non_fungible()
                 .add_metadata("provider_name", provider_name.trim())
-                .depositable(require_admin.clone())
-                .recallable(require_admin.clone())
-                .update_non_fungible_data(require_admin.clone())
+                .depositable(require_admin.clone(), OWNER)
+                .recallable(require_admin.clone(), OWNER)
+                .update_non_fungible_data(require_admin.clone(), OWNER)
                 .build();
 
             // Create user access rules
@@ -66,12 +68,13 @@ mod template {
             let initial_tokens = ResourceBuilder::confidential()
                 .with_metadata(token_metadata.clone())
                 .with_token_symbol(&token_symbol)
-                // Access rules
-                .mintable(require_admin.clone())
-                .burnable(require_admin.clone())
-                .depositable(require_user.clone())
-                .withdrawable(require_user.clone())
-                .recallable(require_admin.clone())
+                // Access rules. OWNER lets the resource owner (this component) update each
+                // rule later — swap to LOCKED to make any given rule permanent.
+                .mintable(require_admin.clone(), OWNER)
+                .burnable(require_admin.clone(), OWNER)
+                .depositable(require_user.clone(), OWNER)
+                .withdrawable(require_user.clone(), OWNER)
+                .recallable(require_admin.clone(), OWNER)
                 .with_authorization_hook(component_alloc.get_address(), "authorize_user_deposit")
                 .with_view_key(view_key)
                 .initial_supply(initial_supply_proof);
@@ -81,9 +84,9 @@ mod template {
                 let wrapped_resource = ResourceBuilder::public_fungible()
                     .with_metadata(token_metadata)
                     .with_token_symbol(format!("w{token_symbol}"))
-                    // Access rules
-                    .mintable(require_admin.clone())
-                    .burnable(require_admin.clone())
+                    // Access rules — see comment above on OWNER vs LOCKED.
+                    .mintable(require_admin.clone(), OWNER)
+                    .burnable(require_admin.clone(), OWNER)
                     .initial_supply(initial_token_supply);
 
                 Some(WrappedExchangeToken {

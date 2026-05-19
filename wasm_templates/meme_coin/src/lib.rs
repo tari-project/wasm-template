@@ -33,8 +33,10 @@ pub mod {{ project-name | snake_case }} {
                 .create()
         }
 
-        pub fn set_access_rules(&mut self, access_rules: ResourceAccessRules) {
-            self.token_vault.get_resource_manager().set_access_rules(access_rules)
+        pub fn update_access_rule(&mut self, action: ResourceAuthAction, new_rule: AccessRule) {
+            self.token_vault
+                .get_resource_manager()
+                .update_access_rule(action, new_rule)
         }
 
         pub fn burn(&mut self, amount: Amount) {
