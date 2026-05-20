@@ -32,7 +32,7 @@ mod {{ project-name | snake_case }}_ico {
             (
                 Component::new(Self {
                     ico_tokens: Vault::from_bucket(coins),
-                    reward_coins: Vault::new_empty(XTR),
+                    reward_coins: Vault::new_empty(TARI_TOKEN),
                     token_price: price,
                 })
                     .with_owner_rule(OwnerRule::OwnedBySigner)
@@ -42,13 +42,13 @@ mod {{ project-name | snake_case }}_ico {
             )
         }
 
-        pub fn buy(&mut self, xtr_coins: Bucket) -> Bucket {
-            assert_eq!(xtr_coins.resource_address(), XTR, "You must pay with XTR!");
-            if xtr_coins.amount() < self.token_price {
-                panic!("Insufficient funds! You need more XTR to buy ICOs.");
+        pub fn buy(&mut self, payment: Bucket) -> Bucket {
+            assert_eq!(payment.resource_address(), TARI_TOKEN, "You must pay with Tari tokens!");
+            if payment.amount() < self.token_price {
+                panic!("Insufficient funds! You need more Tari to buy ICOs.");
             }
-            let ico_tokens_count = xtr_coins.amount() / self.token_price;
-            self.reward_coins.deposit(xtr_coins);
+            let ico_tokens_count = payment.amount() / self.token_price;
+            self.reward_coins.deposit(payment);
             self.ico_tokens.withdraw(ico_tokens_count)
         }
 

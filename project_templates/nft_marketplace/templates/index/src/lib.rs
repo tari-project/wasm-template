@@ -36,7 +36,7 @@ mod nft_marketplace_index {
         ) -> (ComponentAddress, Bucket) {
             // init the auction component
             let (auction_component, seller_badge): (ComponentAddress, Bucket) = TemplateManager::get(self.auction_template)
-                .call("new".to_string(), call_args![
+                .call("new", args![
                     nft_bucket,
                     seller_address,
                     min_price,

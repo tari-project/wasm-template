@@ -21,8 +21,9 @@
 //   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 use tari_template_lib::prelude::*;
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, minicbor::Encode, minicbor::Decode, minicbor::CborLen)]
 struct NftData {
+    #[n(0)]
     pub brightness: u32,
 }
 
@@ -41,7 +42,10 @@ mod {{ project-name | snake_case }} {
                 // TODO: specify stricter access rules as required
                 .with_access_rules(
                     ResourceAccessRules::new()
-                        .mintable(AccessRule::AllowAll)
+                        // LOCKED is a prelude constant — the configured mint rule cannot be
+                        // changed after creation. Swap to OWNER or a custom AccessRule if you
+                        // need to be able to update it later.
+                        .mintable(AccessRule::AllowAll, LOCKED)
                 )
                 .with_owner_rule(
                     OwnerRule::ByAccessRule(AccessRule::AllowAll)

@@ -235,16 +235,18 @@ fn setup() -> TestSetup {
         .inspect_component(stable_coin_component)
         .unwrap();
 
+    // Component state is encoded with minicbor as a positional array, so look up fields by
+    // their #[n(N)] index rather than by name.
     let token_vault = indexed
-        .get_value("$.token_vault")
+        .get_value("$.0")
         .unwrap()
-        .expect("user_badge_resource not found");
+        .expect("token_vault not found");
     let user_badge_resource = indexed
-        .get_value("$.user_auth_resource")
+        .get_value("$.1")
         .unwrap()
         .expect("user_auth_resource not found");
     let admin_badge_resource = indexed
-        .get_value("$.admin_auth_resource")
+        .get_value("$.2")
         .unwrap()
         .expect("admin_auth_resource not found");
 

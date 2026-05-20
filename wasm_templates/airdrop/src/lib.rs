@@ -8,7 +8,7 @@ pub mod {{ project-name | snake_case }} {
     pub struct {{ project-name | upper_camel_case }} {
         allow_list: BTreeSet<ComponentAddress>,
         is_airdrop_open: bool,
-        claimed_count: u128,
+        claimed_count: u64,
         vault: Vault,
     }
 
@@ -73,7 +73,7 @@ pub mod {{ project-name | snake_case }} {
             self.vault.get_resource_manager().total_supply()
         }
 
-        pub fn num_claimed(&self) -> u128 {
+        pub fn num_claimed(&self) -> u64 {
             self.claimed_count
         }
 
@@ -81,8 +81,10 @@ pub mod {{ project-name | snake_case }} {
             self.vault.balance()
         }
 
-        pub fn set_access_rules(&mut self, access_rules: ResourceAccessRules) {
-            self.vault.get_resource_manager().set_access_rules(access_rules)
+        pub fn update_access_rule(&mut self, action: ResourceAuthAction, new_rule: AccessRule) {
+            self.vault
+                .get_resource_manager()
+                .update_access_rule(action, new_rule)
         }
     }
 }

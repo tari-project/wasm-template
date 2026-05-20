@@ -5,10 +5,12 @@ use tari_template_lib::models::Vault;
 use tari_template_lib::types::Amount;
 use tari_template_lib::resource::ResourceManager;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, minicbor::Encode, minicbor::Decode, minicbor::CborLen)]
 pub enum ExchangeFee {
-    Fixed(Amount),
-    Percentage(u64),
+    #[n(0)]
+    Fixed(#[n(0)] Amount),
+    #[n(1)]
+    Percentage(#[n(0)] u64),
 }
 
 impl ExchangeFee {
@@ -23,9 +25,11 @@ impl ExchangeFee {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, minicbor::Encode, minicbor::Decode, minicbor::CborLen)]
 pub struct WrappedExchangeToken {
+    #[n(0)]
     pub vault: Vault,
+    #[n(1)]
     pub exchange_fee: ExchangeFee,
 }
 
