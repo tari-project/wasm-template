@@ -6,5 +6,4 @@ metadata-server-url = "http://localhost:3000/"
 
 [networks.esmeralda]
 wallet-daemon-url = "http://127.0.0.1:5100/json_rpc"
-metadata-server-url = "https://ootle-templates-esme.tari.com/"
-template-address = "template_829f9900603293abf790036a98d5c273ee7fe908d623b07f026917dc72774482"
+template-address = "template_0e86bea910ee33e3fc8da6ede2eaf4c16aae6a1dee7d8ab8408756b9af8d7e1d"

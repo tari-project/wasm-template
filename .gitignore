@@ -4,5 +4,6 @@ target
 data/
 .claude/
 
-# Ignore Cargo.lock files in examples, they are not meant to be published
+# Ignore Cargo.lock files for example template (library) crates, they are not meant to be published
 examples/*/Cargo.lock
+examples/*/template/Cargo.lock
