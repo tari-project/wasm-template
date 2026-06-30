@@ -7,11 +7,11 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tari_template_lib = { version = "0.27" }
+tari_template_lib = { version = "0.28" }
 minicbor = { version = "2.2", default-features = false, features = ["alloc", "derive"] }
 
 [dev-dependencies]
-tari_template_test_tooling = "0.34"
+tari_template_test_tooling = "0.35"
 
 {% if in_cargo_workspace == "false" %}
 [profile.release]
