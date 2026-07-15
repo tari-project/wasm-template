@@ -27,10 +27,10 @@ fi
 WASM_TARGET="wasm32-unknown-unknown"
 
 # Templates listed in wasm_templates/cargo-generate.toml
-WASM_TEMPLATES=(empty no_std counter fungible nft swap meme_coin airdrop stable_coin)
+WASM_TEMPLATES=(empty no_std counter fungible nft swap meme_coin airdrop ico stable_coin)
 
 # Templates that have tests (swap has no tests)
-TEMPLATES_WITH_TESTS=(empty no_std counter fungible nft meme_coin airdrop stable_coin)
+TEMPLATES_WITH_TESTS=(empty no_std counter fungible nft meme_coin airdrop ico stable_coin)
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'

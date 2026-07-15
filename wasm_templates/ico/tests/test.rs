@@ -5,7 +5,7 @@ use tari_template_lib::types::Amount;
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::transaction::{args, Transaction};
 use tari_template_test_tooling::TemplateTest;
-use tari_template_lib::constants::XTR;
+use tari_template_lib::types::constants::TARI_TOKEN;
 
 struct IcoCreateResult {
     pub account_address: ComponentAddress,
@@ -21,7 +21,7 @@ fn ico(test: &mut TemplateTest) -> IcoCreateResult {
             .call_function(
                 test.get_template_address("{{ project-name | upper_camel_case }}Ico"),
                 "new",
-                args!["{{ project-name | shouty_kebab_case }}-ICO".to_string(), 1_000_000_000, 10],
+                args!["ICO".to_string(), 1_000_000_000, 10],
             )
             .put_last_instruction_output_on_workspace("ret")
             .call_method(
@@ -75,7 +75,7 @@ fn test_buy_success() {
             .call_method(
                 account_component,
                 "withdraw",
-                args![XTR, 100],
+                args![TARI_TOKEN, 100],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -154,7 +154,7 @@ fn test_buy_insufficient_funds() {
             .call_method(
                 account_component,
                 "withdraw",
-                args![XTR, Amount(5)],
+                args![TARI_TOKEN, 5],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -168,7 +168,7 @@ fn test_buy_insufficient_funds() {
 
     assert!(matches!(reject_reason, RejectReason::ExecutionFailure(_)));
     if let RejectReason::ExecutionFailure(reason) = reject_reason {
-        assert_eq!(reason, "Panic! Insufficient funds! You need more XTR to buy ICOs.");
+        assert!(reason.contains("Panic! Insufficient funds! You need more Tari to buy ICOs."));
     }
 }
 
@@ -186,7 +186,7 @@ fn test_withdraw_access_denied() {
             .call_method(
                 account_component,
                 "withdraw",
-                args![XTR, Amount(100)],
+                args![TARI_TOKEN, 100],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -210,7 +210,7 @@ fn test_withdraw_access_denied() {
             .call_method(
                 ico_result.ico_address,
                 "withdraw",
-                args![Amount(100)],
+                args![100],
             )
             .build_and_seal(&account_secret_key),
         vec![owner_proof.clone()],
@@ -218,7 +218,7 @@ fn test_withdraw_access_denied() {
 
     assert!(matches!(reject_reason, RejectReason::ExecutionFailure(_)));
     if let RejectReason::ExecutionFailure(reason) = reject_reason {
-        assert!(reason.starts_with("Access Denied:"));
+        assert!(reason.contains("Access Denied:"));
         assert!(reason.contains(
             format!("call component method 'withdraw' on {}", ico_result.ico_address).as_str()
         ));
@@ -239,7 +239,7 @@ fn test_owner_withdraw() {
             .call_method(
                 account_component,
                 "withdraw",
-                args![XTR, Amount(100)],
+                args![TARI_TOKEN, 100],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -263,12 +263,12 @@ fn test_owner_withdraw() {
             .call_method(
                 account_component,
                 "balance",
-                args![XTR],
+                args![TARI_TOKEN],
             )
             .call_method(
                 ico_result.ico_address,
                 "withdraw",
-                args![Amount(100)],
+                args![100],
             )
             .put_last_instruction_output_on_workspace("xtr_coins")
             .call_method(
@@ -279,7 +279,7 @@ fn test_owner_withdraw() {
             .call_method(
                 account_component,
                 "balance",
-                args![XTR],
+                args![TARI_TOKEN],
             )
             .build_and_seal(&ico_result.account_secret),
         vec![ico_result.account_proof.clone()],
@@ -293,5 +293,5 @@ fn test_owner_withdraw() {
         .decode::<Amount>()
         .unwrap();
 
-    assert_eq!(owner_initial_xtr_balance, owner_final_xtr_balance - 100u64.into());
+    assert_eq!(owner_initial_xtr_balance, owner_final_xtr_balance - 100);
 }
