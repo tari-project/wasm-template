@@ -8,7 +8,7 @@ edition = "2024"
 tari_template_lib = { version = "0.29" }
 
 [dev-dependencies]
-tari_template_test_tooling = "0.36"
+tari_template_test_tooling = "0.38"
 
 {% if in_cargo_workspace == "false" %}
 [profile.release]
