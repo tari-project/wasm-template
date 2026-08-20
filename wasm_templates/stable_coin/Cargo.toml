@@ -6,11 +6,11 @@ edition = "2024"
 authors = ["{{authors}}"]
 
 [dependencies]
-tari_template_lib = { version = "0.29" }
+tari_template_lib = { version = "0.31" }
 minicbor = { version = "2.2", default-features = false, features = ["alloc", "derive"] }
 
 [dev-dependencies]
-tari_template_test_tooling = "0.38"
+tari_template_test_tooling = "0.39"
 
 [profile.release]
 opt-level = 's'     # Optimize for size.

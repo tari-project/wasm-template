@@ -10,10 +10,10 @@ name = "guessing-game-cli"
 path = "src/main.rs"
 
 [dependencies]
-ootle-rs = "0.18"
-tari_ootle_transaction = { version = "0.38", features = ["serde"] }
-tari_ootle_common_types = "0.38"
-tari_template_lib_types = "0.29"
+ootle-rs = "0.20"
+tari_ootle_transaction = { version = "0.39", features = ["serde"] }
+tari_ootle_common_types = "0.39"
+tari_template_lib_types = "0.31"
 tari_crypto = "0.23"
 tari_utilities = "0.10"
 
