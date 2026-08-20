@@ -1,4 +1,4 @@
-use tari_template_test_tooling::transaction::{Transaction, args};
+use tari_template_test_tooling::transaction::args;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_lib::types::NonFungibleAddress;
 use tari_template_lib::prelude::{Amount, ComponentAddress};
@@ -15,7 +15,7 @@ struct AirdropResult {
 fn airdrop(test: &mut TemplateTest) -> AirdropResult {
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_function(
                 test.get_template_address("{{ project-name | upper_camel_case }}"),
                 "new",
@@ -45,7 +45,7 @@ fn test_airdrop_add_recipient_airdrop_already_started() {
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
 
     let result = test.execute_expect_failure(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "add_recipient",
@@ -66,7 +66,7 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
     // open airdrop
     let (_account_component, owner_proof, account_secret_key) = test.create_funded_account();
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "open_airdrop",
@@ -81,7 +81,7 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
     for _ in 0..100 {
         let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
         let result = test.execute_expect_success(
-            Transaction::builder_localnet()
+            test.transaction()
                 .call_method(
                     airdrop_result.airdrop_address,
                     "add_recipient",
@@ -96,7 +96,7 @@ fn test_airdrop_add_recipient_airdrop_allow_list_full() {
     // fail to add more recipient than allowed
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
     let result = test.execute_expect_failure(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "add_recipient",
@@ -117,7 +117,7 @@ fn test_airdrop_add_recipient_success() {
     // open airdrop
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "open_airdrop",
@@ -142,7 +142,7 @@ fn test_airdrop_open_airdrop_failure() {
     // open airdrop
     let (_account_component, owner_proof, account_secret_key) = test.create_funded_account();
     let result = test.execute_expect_failure(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "open_airdrop",
@@ -167,7 +167,7 @@ fn test_airdrop_claim_any_success() {
 
     // get claimed count
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "num_claimed",
@@ -184,7 +184,7 @@ fn test_airdrop_claim_any_success() {
 
     // get vault balance
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "vault_balance",
@@ -201,7 +201,7 @@ fn test_airdrop_claim_any_success() {
 
     // claim
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "open_airdrop",
@@ -226,7 +226,7 @@ fn test_airdrop_claim_any_success() {
 
     // get claimed count again
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "num_claimed",
@@ -243,7 +243,7 @@ fn test_airdrop_claim_any_success() {
 
     // get vault balance again
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "vault_balance",
@@ -267,7 +267,7 @@ fn test_airdrop_claim_any_airdrop_not_open() {
 
     // claim
     let reject_reason = test.execute_expect_failure(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "claim_any",
@@ -290,7 +290,7 @@ fn test_airdrop_claim_any_already_claimed() {
 
     // claim
     let reject_reason = test.execute_expect_failure(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(
                 airdrop_result.airdrop_address,
                 "open_airdrop",

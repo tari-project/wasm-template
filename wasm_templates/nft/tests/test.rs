@@ -1,5 +1,5 @@
 use tari_template_test_tooling::TemplateTest;
-use tari_template_test_tooling::transaction::{args, Transaction};
+use tari_template_test_tooling::transaction::args;
 use tari_template_lib::types::{ComponentAddress, ResourceAddress, Amount};
 
 #[test]
@@ -20,7 +20,7 @@ fn test_nft() {
     assert_eq!(total_supply, 0);
 
     let result = test.try_execute(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_method(nft_component, "mint", args![])
             .put_last_instruction_output_on_workspace("new_nft")
             .call_method(receiver_address, "deposit", args![Workspace("new_nft")])

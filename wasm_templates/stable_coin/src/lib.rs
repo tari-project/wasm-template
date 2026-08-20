@@ -9,7 +9,7 @@ use tari_template_lib::prelude::*;
 mod template {
     use super::*;
     use crate::wrapped_exchange_token::{ExchangeFee, WrappedExchangeToken};
-    use std::collections::BTreeSet;
+    use std::collections::{BTreeMap, BTreeSet};
     use tari_template_lib::engine;
 
     const DEFAULT_WRAPPED_TOKEN_EXCHANGE_FEE: ExchangeFee = ExchangeFee::Fixed(amount!(5));
@@ -153,7 +153,11 @@ mod template {
         /// Increase token supply by amount.
         pub fn increase_supply(&mut self, amount: Amount) {
             let proof = ConfidentialOutputStatement::mint_revealed(amount);
-            let new_tokens = self.token_vault_manager().mint_confidential(proof);
+            // A revealed-only mint creates no confidential commitments, so there are no
+            // commitment value proofs to supply.
+            let new_tokens = self
+                .token_vault_manager()
+                .mint_confidential(proof, BTreeMap::new());
             self.token_vault.deposit(new_tokens);
             self.total_supply += amount;
 

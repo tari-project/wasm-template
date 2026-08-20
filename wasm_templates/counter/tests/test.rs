@@ -1,4 +1,4 @@
-use tari_template_test_tooling::{TemplateTest, transaction::{args, Transaction}};
+use tari_template_test_tooling::{TemplateTest, transaction::args};
 
 #[test]
 fn it_works() {
@@ -7,7 +7,7 @@ fn it_works() {
     let counter_template = test.get_template_address("{{ project-name | upper_camel_case }}");
 
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .allocate_component_address("addr")
             .call_function(counter_template, "with_address", args![Workspace("addr")])
             .call_method("addr", "value", args![])

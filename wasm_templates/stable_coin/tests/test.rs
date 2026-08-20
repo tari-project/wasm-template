@@ -3,7 +3,7 @@ use tari_template_lib::types::Amount;
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::TemplateTest;
-use tari_template_test_tooling::transaction::{args, Transaction};
+use tari_template_test_tooling::transaction::args;
 use tari_template_test_tooling::byte_type::ToByteType;
 
 const TEMPLATE_MODULE_NAME: &str = "{{project-name | upper_camel_case}}";
@@ -21,7 +21,7 @@ fn it_increases_and_decreases_supply() {
     } = setup();
 
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .create_proof(admin_account, admin_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
             .call_method(stable_coin_component, "increase_supply", args![123])
@@ -38,7 +38,7 @@ fn it_increases_and_decreases_supply() {
     assert_eq!(total_supply, 1_000_000_123);
 
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .create_proof(admin_account, admin_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
             .call_method(stable_coin_component, "decrease_supply", args![456])
@@ -74,7 +74,7 @@ fn it_prevents_unauthorised_users_from_transacting() {
 
     // Allow Alice to transact and provision funds in her account
     test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             // Auth
             .create_proof(admin_account, admin_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
@@ -97,7 +97,7 @@ fn it_prevents_unauthorised_users_from_transacting() {
 
     // Alice to Bob should fail (Bob is not allowed to transact)
     let reason = test.execute_expect_failure(
-        Transaction::builder_localnet()
+        test.transaction()
             .create_proof(alice_account, user_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
             .call_method(alice_account, "withdraw", args![token_resource, 456])
@@ -131,7 +131,7 @@ fn it_allows_users_to_transact() {
 
     // Allow Alice to transact and provision funds in her account
     test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             // Auth
             .create_proof(admin_account, admin_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
@@ -162,7 +162,7 @@ fn it_allows_users_to_transact() {
 
     // Alice to Bob transact again
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .create_proof(alice_account, user_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
             .call_method(alice_account, "withdraw", args![token_resource, 456])
@@ -205,7 +205,7 @@ fn setup() -> TestSetup {
     let view_key = test.public_key().to_byte_type();
 
     let result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_function(
                 template,
                 "instantiate",

@@ -2,7 +2,7 @@ use tari_template_lib::types::{Amount, ComponentAddress, amount, NonFungibleAddr
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
 use tari_template_test_tooling::TemplateTest;
-use tari_template_test_tooling::transaction::{args, Transaction};
+use tari_template_test_tooling::transaction::args;
 
 struct CreateMemeCoinResult {
     pub initial_supply: Amount,
@@ -19,7 +19,7 @@ fn create_meme_coin(test: &mut TemplateTest) -> CreateMemeCoinResult {
     // create new memecoin
     let memecoin_template_addr = test.get_template_address("{{ project-name | upper_camel_case }}");
     let create_coin_result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_function(
                 memecoin_template_addr,
                 "create",
@@ -54,7 +54,7 @@ fn test_memecoin_owner_only_allowed_method() {
 
     // make sure that admin only method is working
     let result = template_test.execute_expect_success(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 meme_coin_result.meme_coin_component,
                 "burn",
@@ -68,7 +68,7 @@ fn test_memecoin_owner_only_allowed_method() {
     // test if a new user can call it
     let (_, owner_proof, account_secret_key) = template_test.create_funded_account();
     let reject_reason = template_test.execute_expect_failure(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 meme_coin_result.meme_coin_component,
                 "burn",
@@ -89,7 +89,7 @@ fn test_memecoin_owner_transfer_coins() {
     let withdraw_amount = 10u64;
 
     let result = template_test.execute_expect_success(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 meme_coin_result.meme_coin_component,
                 "withdraw",
@@ -140,7 +140,7 @@ fn test_memecoin_owner_burn() {
     let burned_amount = amount![100];
 
     let result = template_test.execute_expect_success(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 meme_coin_result.meme_coin_component,
                 "burn",
@@ -169,7 +169,7 @@ fn test_memecoin_owner_mint() {
     let deposited_amount = amount![100];
 
     let result = template_test.execute_expect_success(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 meme_coin_result.meme_coin_component,
                 "mint",

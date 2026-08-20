@@ -3,7 +3,7 @@ use tari_template_lib::models::Bucket;
 use tari_template_lib::types::{ComponentAddress, NonFungibleAddress};
 use tari_template_lib::types::Amount;
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
-use tari_template_test_tooling::transaction::{args, Transaction};
+use tari_template_test_tooling::transaction::args;
 use tari_template_test_tooling::TemplateTest;
 use tari_template_lib::types::constants::TARI_TOKEN;
 
@@ -17,7 +17,7 @@ struct IcoCreateResult {
 fn ico(test: &mut TemplateTest) -> IcoCreateResult {
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
     let create_coin_result = test.execute_expect_success(
-        Transaction::builder_localnet()
+        test.transaction()
             .call_function(
                 test.get_template_address("{{ project-name | upper_camel_case }}Ico"),
                 "new",
@@ -55,7 +55,7 @@ fn test_buy_success() {
 
     // buy ICOs with XTR
     let result = template_test.execute_expect_success(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 ico_result.ico_address,
                 "ico_resource_address",
@@ -134,7 +134,7 @@ fn test_buy_insufficient_funds() {
 
     // buy ICOs with XTR
     let reject_reason = template_test.execute_expect_failure(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 ico_result.ico_address,
                 "ico_resource_address",
@@ -182,7 +182,7 @@ fn test_withdraw_access_denied() {
 
     // buy ICOs with XTR
     let _ = template_test.execute_expect_success(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 account_component,
                 "withdraw",
@@ -206,7 +206,7 @@ fn test_withdraw_access_denied() {
 
     // try to withdraw funds from ICO using non-owner account
     let reject_reason = template_test.execute_expect_failure(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 ico_result.ico_address,
                 "withdraw",
@@ -235,7 +235,7 @@ fn test_owner_withdraw() {
 
     // buy ICOs with XTR
     let _ = template_test.execute_expect_success(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 account_component,
                 "withdraw",
@@ -259,7 +259,7 @@ fn test_owner_withdraw() {
 
     // withdraw funds with owner
     let result = template_test.execute_expect_success(
-        Transaction::builder_localnet()
+        template_test.transaction()
             .call_method(
                 account_component,
                 "balance",

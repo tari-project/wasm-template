@@ -1,4 +1,4 @@
-use tari_template_test_tooling::transaction::{args, Transaction};
+use tari_template_test_tooling::transaction::args;
 use tari_template_lib::prelude::{Amount, ComponentAddress, };
 use tari_template_test_tooling::TemplateTest;
 
@@ -12,7 +12,7 @@ fn test_fungible() {
     let (receiver_address, receiver_proof, receiver_secret_key) = template_test.create_empty_account();
 
     let result = template_test.execute_expect_success(
-        Transaction::builder_localnet()
+        template_test.transaction()
              .call_method(fungible_component, "resource_address", args![])
             .put_last_instruction_output_on_workspace("resource_address")
             .call_method(fungible_component, "take_free_coins", args![100])

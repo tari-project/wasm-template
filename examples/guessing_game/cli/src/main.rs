@@ -4,7 +4,7 @@ use crate::want_list::WantList;
 use clap::{CommandFactory, Parser, Subcommand};
 use dialoguer::{Input, Select};
 use ootle_rs::{
-    Network, ToAccountAddress, TransactionRequest,
+    Epoch, Network, ToAccountAddress, TransactionRequest,
     builtin_templates::{UnsignedTransactionBuilder, faucet::IFaucet},
     key_provider::PrivateKeyProvider,
     keys::OotleSecretKey,
@@ -207,6 +207,15 @@ fn wallet_from_state(state: &State) -> anyhow::Result<OotleWallet> {
 
 // ──────────────────────────────── Transaction helpers ────────────────────────
 
+/// How many epochs ahead of the current one a transaction we build stays valid for. Every
+/// transaction declares the last epoch it may be sequenced in; past it, it can never land.
+const MAX_EPOCH_WINDOW: u64 = 10;
+
+async fn max_epoch(provider: &IndexerProvider<OotleWallet>) -> anyhow::Result<Epoch> {
+    let current = provider.get_epoch().await?;
+    Ok(Epoch(current.as_u64() + MAX_EPOCH_WINDOW))
+}
+
 async fn build_and_send(
     provider: &mut IndexerProvider<OotleWallet>,
     build_fn: impl FnOnce(TransactionBuilder) -> TransactionBuilder,
@@ -214,7 +223,9 @@ async fn build_and_send(
 ) -> anyhow::Result<TransactionReceipt> {
     let network = provider.network();
 
-    let base_builder = TransactionBuilder::new(network).with_auto_fill_inputs();
+    let max_epoch = max_epoch(provider).await?;
+
+    let base_builder = TransactionBuilder::new(network, max_epoch).with_auto_fill_inputs();
     let unsigned_tx = build_fn(base_builder).build_unsigned();
     let unsigned_tx = provider
         .resolve_input_want_list(unsigned_tx, want_list.items())
@@ -356,7 +367,7 @@ async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
     );
     println!("  🏦 Account component: {account_addr}");
 
-    let unsigned_tx = IFaucet::new(&provider)
+    let unsigned_tx = IFaucet::new(&provider, max_epoch(&provider).await?)
         .take_faucet_funds()
         .pay_fee(500u64)
         .prepare()
@@ -678,7 +689,7 @@ async fn create_user(
 
     println!("👤 Creating user '{name}' with account address {account_address}...");
 
-    let unsigned_tx = IFaucet::new(&provider)
+    let unsigned_tx = IFaucet::new(&provider, max_epoch(&provider).await?)
         .take_faucet_funds()
         .pay_fee(500u64)
         .prepare()
