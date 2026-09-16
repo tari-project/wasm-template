@@ -168,7 +168,7 @@ fn test_buy_insufficient_funds() {
 
     assert!(matches!(reject_reason, RejectReason::ExecutionFailure(_)));
     if let RejectReason::ExecutionFailure(reason) = reject_reason {
-        assert!(reason.contains("Panic! Insufficient funds! You need more Tari to buy ICOs."));
+        assert!(reason.contains("Insufficient funds! You need more Tari to buy ICOs."));
     }
 }
 

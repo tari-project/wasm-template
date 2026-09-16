@@ -100,8 +100,17 @@ fn it_prevents_unauthorised_users_from_transacting() {
         test.transaction()
             .create_proof(alice_account, user_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
-            .call_method(alice_account, "withdraw", args![token_resource, 456])
+            // A frame authorizes with the badges it is stamped with and the proofs it is passed
+            // as arguments, so the user badge reaches the account's own frame as an argument.
+            .call_method(
+                alice_account,
+                "withdraw_with_auth",
+                args![token_resource, 456, Workspace("proof")],
+            )
             .put_last_instruction_output_on_workspace("funds")
+            // `deposit_with_auth` is owner-restricted on an account, so a transfer to someone else
+            // uses plain `deposit`; the resource's authorization hook checks that the receiving
+            // account owns a user badge.
             .call_method(bob_account, "deposit", args![Workspace("funds")])
             .call_method(bob_account, "balance", args![token_resource])
             .drop_all_proofs_in_workspace()
@@ -165,8 +174,17 @@ fn it_allows_users_to_transact() {
         test.transaction()
             .create_proof(alice_account, user_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
-            .call_method(alice_account, "withdraw", args![token_resource, 456])
+            // A frame authorizes with the badges it is stamped with and the proofs it is passed
+            // as arguments, so the user badge reaches the account's own frame as an argument.
+            .call_method(
+                alice_account,
+                "withdraw_with_auth",
+                args![token_resource, 456, Workspace("proof")],
+            )
             .put_last_instruction_output_on_workspace("funds")
+            // `deposit_with_auth` is owner-restricted on an account, so a transfer to someone else
+            // uses plain `deposit`; the resource's authorization hook checks that the receiving
+            // account owns a user badge.
             .call_method(bob_account, "deposit", args![Workspace("funds")])
             .call_method(bob_account, "balance", args![token_resource])
             .drop_all_proofs_in_workspace()
