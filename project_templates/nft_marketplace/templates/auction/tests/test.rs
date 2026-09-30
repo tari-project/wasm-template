@@ -672,7 +672,7 @@ fn mint_account_nft(
     account_nft_component: &ComponentAddress,
 ) -> NonFungibleAddress {
     let mut nft_metadata = Metadata::new();
-    nft_metadata.insert("name".to_string(), "my_custom_nft".to_string());
+    nft_metadata.insert("name", "my_custom_nft");
 
     test.execute_expect_success(
         test.transaction()

@@ -782,8 +782,8 @@ async fn cmd_end_game(state: &mut State) -> anyhow::Result<()> {
         .find(|e| e.topic() == "GuessingGame.GameEnded")
         .ok_or_else(|| anyhow::anyhow!("No GameEnded event found in receipt"))?;
 
-    let winner = event.get_payload("winner_account");
-    let number = event.get_payload("number");
+    let winner = event.payload().get_str("winner_account");
+    let number = event.payload().get_str("number");
 
     if let Some(winner) = winner {
         let winner = state

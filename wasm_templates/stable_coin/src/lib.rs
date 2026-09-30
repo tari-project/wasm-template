@@ -33,7 +33,7 @@ mod template {
             enable_wrapped_token: bool,
         ) -> Bucket {
             let provider_name = token_metadata
-                .get("provider_name")
+                .get_str("provider_name")
                 .filter(|v| !v.trim().is_empty())
                 .expect("provider_name metadata entry is required");
 
@@ -365,7 +365,7 @@ mod template {
             let id = NonFungibleId::random();
             emit_event("create_new_admin", [("admin_id", id.to_string())]);
             let mut metadata = Metadata::new();
-            metadata.insert("employee_id", employee_id);
+            metadata.insert("employee_id", &employee_id);
             let badge = ResourceManager::get(self.admin_auth_resource).mint_non_fungible(
                 id,
                 &metadata,
