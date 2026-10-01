@@ -107,7 +107,7 @@ fn it_works() {
         .expect("GameEnded event not found");
 
     // It's difficult to test randomness, we have a 33% chance of a winner, so we'll have to assert either.
-    match event.get_payload("winner_account") {
+    match event.payload().get_str("winner_account") {
         Some(winner) => {
             // Someone won, let's assert that it's one of the three players.
             let winner = winner.parse::<ComponentAddress>().unwrap();

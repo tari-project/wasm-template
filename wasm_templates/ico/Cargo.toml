@@ -5,10 +5,10 @@ authors = ["{{authors}}"]
 edition = "2024"
 
 [dependencies]
-tari_template_lib = { version = "0.32" }
+tari_template_lib = { version = "0.33" }
 
 [dev-dependencies]
-tari_template_test_tooling = "0.41"
+tari_template_test_tooling = "0.42"
 
 {% if in_cargo_workspace == "false" %}
 [profile.release]

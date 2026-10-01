@@ -70,10 +70,10 @@ mod {{ project-name | snake_case }} {
             // These are characteristic of the NFT and are immutable
             let mut immutable_data = Metadata::new();
             immutable_data
-                .insert("name", format!("{{ project-name | upper_camel_case }}{}", id))
+                .insert("name", &format!("{{ project-name | upper_camel_case }}{}", id))
                 .insert(
                     "image_url",
-                    format!("https://nft.storage/{{ project-name | snake_case }}{}.png", id),
+                    &format!("https://nft.storage/{{ project-name | snake_case }}{}.png", id),
                 );
 
             // Mint the NFT, this will fail if the token ID already exists

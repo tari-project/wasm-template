@@ -166,8 +166,8 @@ fn test_buy_insufficient_funds() {
         vec![owner_proof.clone()],
     );
 
-    assert!(matches!(reject_reason, RejectReason::ExecutionFailure(_)));
-    if let RejectReason::ExecutionFailure(reason) = reject_reason {
+    assert!(matches!(reject_reason, RejectReason::ExecutionFailure { .. }));
+    if let RejectReason::ExecutionFailure { message: reason, .. } = reject_reason {
         assert!(reason.contains("Insufficient funds! You need more Tari to buy ICOs."));
     }
 }
@@ -216,8 +216,8 @@ fn test_withdraw_access_denied() {
         vec![owner_proof.clone()],
     );
 
-    assert!(matches!(reject_reason, RejectReason::ExecutionFailure(_)));
-    if let RejectReason::ExecutionFailure(reason) = reject_reason {
+    assert!(matches!(reject_reason, RejectReason::ExecutionFailure { .. }));
+    if let RejectReason::ExecutionFailure { message: reason, .. } = reject_reason {
         assert!(reason.contains("Access Denied:"));
         assert!(reason.contains(
             format!("call component method 'withdraw' on {}", ico_result.ico_address).as_str()
