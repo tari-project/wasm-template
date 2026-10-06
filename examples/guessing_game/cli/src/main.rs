@@ -369,7 +369,7 @@ async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
 
     let unsigned_tx = IFaucet::new(&provider, max_epoch(&provider).await?)
         .take_faucet_funds()
-        .pay_fee(500u64)
+        .pay_fee(3000u64)
         .prepare()
         .await?;
 
@@ -380,7 +380,13 @@ async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
 
     let pending = provider.send_transaction(tx).await?;
     println!("⏳ Transaction submitted: {}", pending.tx_id());
-    pending.watch().await?;
+
+    let outcome = pending.watch().await?;
+    println!("🏁 Outcome: {outcome}");
+    if let Some(reason) = outcome.reject_reason() {
+        anyhow::bail!("❌ Transaction rejected: {reason}");
+    }
+
     println!("💰 Account funded successfully.");
 
     state.account_address = Some(account_addr);
@@ -691,7 +697,7 @@ async fn create_user(
 
     let unsigned_tx = IFaucet::new(&provider, max_epoch(&provider).await?)
         .take_faucet_funds()
-        .pay_fee(500u64)
+        .pay_fee(3000u64)
         .prepare()
         .await?;
     let tx = TransactionRequest::default()
@@ -701,7 +707,13 @@ async fn create_user(
 
     let pending = provider.send_transaction(tx).await?;
     println!("⏳ Transaction submitted: {}", pending.tx_id());
-    pending.watch().await?;
+
+    let outcome = pending.watch().await?;
+    println!("🏁 Outcome: {outcome}");
+    if let Some(reason) = outcome.reject_reason() {
+        anyhow::bail!("❌ Transaction rejected: {reason}");
+    }
+
     println!("🚀 New user account created successfully.");
 
     let user = User {
