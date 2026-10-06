@@ -1,2 +1,5 @@
 [template]
 ignore = [ "template.toml" ]
+
+[placeholders]
+copyright-holder = { prompt = "Who is the copyright holder?", type = "string" }
