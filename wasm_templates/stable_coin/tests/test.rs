@@ -31,9 +31,7 @@ fn it_increases_and_decreases_supply() {
         vec![admin_proof.clone()],
     );
 
-    let total_supply = result.finalize.execution_results[3]
-        .decode::<Amount>()
-        .unwrap();
+    let total_supply = test.expect_return::<Amount>(3);
 
     assert_eq!(total_supply, 1_000_000_123);
 
@@ -48,9 +46,7 @@ fn it_increases_and_decreases_supply() {
         vec![admin_proof],
     );
 
-    let total_supply = result.finalize.execution_results[3]
-        .decode::<Amount>()
-        .unwrap();
+    let total_supply = test.expect_return::<Amount>(3);
 
     assert_eq!(total_supply, 1_000_000_123 - 456);
 }
@@ -192,9 +188,7 @@ fn it_allows_users_to_transact() {
         vec![alice_proof.clone()],
     );
 
-    let bob_balance = result.finalize.execution_results[5]
-        .decode::<Amount>()
-        .unwrap();
+    let bob_balance = test.expect_return::<Amount>(5);
     assert_eq!(bob_balance, 456);
 }
 

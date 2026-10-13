@@ -33,14 +33,14 @@ fn test_nft() {
     for log in result.finalize.logs {
         eprintln!("LOG: {}", log);
     }
-    eprintln!("{:?}", result.finalize.execution_results);
+    eprintln!("{:?}", test.return_values());
     assert_eq!(
-        result.finalize.execution_results[3].decode::<Amount>().unwrap(),
+        test.expect_return::<Amount>(3),
         1
     );
     // After minting a token, the total_supply of tokens is 1
     assert_eq!(
-        result.finalize.execution_results[4].decode::<Amount>().unwrap(),
+        test.expect_return::<Amount>(4),
         1
     );
 }

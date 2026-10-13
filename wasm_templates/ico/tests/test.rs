@@ -16,7 +16,7 @@ struct IcoCreateResult {
 
 fn ico(test: &mut TemplateTest) -> IcoCreateResult {
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
-    let create_coin_result = test.execute_expect_success(
+    test.execute_expect_success(
         test.transaction()
             .call_function(
                 test.get_template_address("{{ project-name | upper_camel_case }}Ico"),
@@ -33,9 +33,7 @@ fn ico(test: &mut TemplateTest) -> IcoCreateResult {
         vec![owner_proof.clone()],
     );
 
-    let (ico_address, _) = create_coin_result.finalize.execution_results[0]
-        .decode::<(ComponentAddress, Bucket)>()
-        .unwrap();
+    let (ico_address, _) = test.expect_return::<(ComponentAddress, Bucket)>(0);
 
     IcoCreateResult {
         account_address: account_component,
@@ -54,7 +52,7 @@ fn test_buy_success() {
     let (account_component, owner_proof, account_secret_key) = template_test.create_funded_account();
 
     // buy ICOs with XTR
-    let result = template_test.execute_expect_success(
+    template_test.execute_expect_success(
         template_test.transaction()
             .call_method(
                 ico_result.ico_address,
@@ -103,24 +101,16 @@ fn test_buy_success() {
         vec![owner_proof.clone()],
     );
 
-    let ico_initial_xtr_balance = result.finalize.execution_results[2]
-        .decode::<Amount>()
-        .unwrap();
+    let ico_initial_xtr_balance = template_test.expect_return::<Amount>(2);
     assert_eq!(ico_initial_xtr_balance, Amount::zero());
 
-    let account_initial_ico_balance = result.finalize.execution_results[3]
-        .decode::<Amount>()
-        .unwrap();
+    let account_initial_ico_balance = template_test.expect_return::<Amount>(3);
     assert_eq!(account_initial_ico_balance, Amount::zero());
 
-    let ico_final_xtr_balance = result.finalize.execution_results[9]
-        .decode::<Amount>()
-        .unwrap();
+    let ico_final_xtr_balance = template_test.expect_return::<Amount>(9);
     assert_eq!(ico_final_xtr_balance, 100);
 
-    let account_final_ico_balance = result.finalize.execution_results[10]
-        .decode::<Amount>()
-        .unwrap();
+    let account_final_ico_balance = template_test.expect_return::<Amount>(10);
     assert_eq!(account_final_ico_balance, 10);
 }
 
@@ -258,7 +248,7 @@ fn test_owner_withdraw() {
     );
 
     // withdraw funds with owner
-    let result = template_test.execute_expect_success(
+    template_test.execute_expect_success(
         template_test.transaction()
             .call_method(
                 account_component,
@@ -285,13 +275,9 @@ fn test_owner_withdraw() {
         vec![ico_result.account_proof.clone()],
     );
 
-    let owner_initial_xtr_balance = result.finalize.execution_results[0]
-        .decode::<Amount>()
-        .unwrap();
+    let owner_initial_xtr_balance = template_test.expect_return::<Amount>(0);
 
-    let owner_final_xtr_balance = result.finalize.execution_results[4]
-        .decode::<Amount>()
-        .unwrap();
+    let owner_final_xtr_balance = template_test.expect_return::<Amount>(4);
 
     assert_eq!(owner_initial_xtr_balance, owner_final_xtr_balance - 100);
 }
