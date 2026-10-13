@@ -605,9 +605,7 @@ fn setup() -> TestSetup {
             .build_and_seal(&seller.key),
         vec![seller.owner_token.clone()],
     );
-    let auction_index_component = result.finalize.execution_results[0]
-        .decode::<ComponentAddress>()
-        .unwrap();
+    let auction_index_component = test.expect_return::<ComponentAddress>(0);
 
     // create a new account NFT that the seller is going to put on sale
     let account_nft_component = create_account_nft_component(&mut test, &seller);
@@ -642,9 +640,7 @@ fn get_account_balance(
             .build_and_seal(&account.key),
         vec![account.owner_token.clone()],
     );
-    let balance = result.finalize.execution_results[0]
-        .decode::<Amount>()
-        .unwrap();
+    let balance = test.expect_return::<Amount>(0);
     balance
 }
 
@@ -660,9 +656,7 @@ fn create_account_nft_component(test: &mut TemplateTest, account: &Account) -> C
             .build_and_seal(&account.key),
         vec![account.owner_token.clone()],
     );
-    let account_nft_component = result.finalize.execution_results[0]
-        .decode::<ComponentAddress>()
-        .unwrap();
+    let account_nft_component = test.expect_return::<ComponentAddress>(0);
     account_nft_component
 }
 
@@ -728,9 +722,7 @@ fn create_auction(test: &mut TemplateTest, req: &AuctionRequest) -> (ComponentAd
         vec![req.seller.owner_token.clone()],
     );
 
-    let (auction_component, _) = result.finalize.execution_results[2]
-        .decode::<(ComponentAddress, Bucket)>()
-        .unwrap();
+    let (auction_component, _) = test.expect_return::<(ComponentAddress, Bucket)>(2);
 
     let output = test.get_previous_output_address(SubstateType::NonFungible);
     let seller_badge = output.as_non_fungible_address().unwrap().clone();

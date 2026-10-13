@@ -18,7 +18,7 @@ fn create_meme_coin(test: &mut TemplateTest) -> CreateMemeCoinResult {
 
     // create new memecoin
     let memecoin_template_addr = test.get_template_address("{{ project-name | upper_camel_case }}");
-    let create_coin_result = test.execute_expect_success(
+    test.execute_expect_success(
         test.transaction()
             .call_function(
                 memecoin_template_addr,
@@ -34,9 +34,7 @@ fn create_meme_coin(test: &mut TemplateTest) -> CreateMemeCoinResult {
         vec![owner_proof.clone()],
     );
 
-    let coin_component = create_coin_result.finalize.execution_results[0]
-        .decode::<ComponentAddress>()
-        .unwrap();
+    let coin_component = test.expect_return::<ComponentAddress>(0);
 
     CreateMemeCoinResult {
         initial_supply: initial_supply.into(),
@@ -118,14 +116,10 @@ fn test_memecoin_owner_transfer_coins() {
     );
     assert!(result.finalize.result.is_accept());
 
-    let target_account_memecoin_balance = result.finalize.execution_results[5]
-        .decode::<Amount>()
-        .unwrap();
+    let target_account_memecoin_balance = template_test.expect_return::<Amount>(5);
     assert_eq!(target_account_memecoin_balance, withdraw_amount);
 
-    let memecoin_balance = result.finalize.execution_results[6]
-        .decode::<Amount>()
-        .unwrap();
+    let memecoin_balance = template_test.expect_return::<Amount>(6);
     assert_eq!(
         memecoin_balance,
         meme_coin_result.initial_supply - withdraw_amount
@@ -152,9 +146,7 @@ fn test_memecoin_owner_burn() {
     );
     assert!(result.finalize.result.is_accept());
 
-    let memecoin_balance = result.finalize.execution_results[1]
-        .decode::<Amount>()
-        .unwrap();
+    let memecoin_balance = template_test.expect_return::<Amount>(1);
     assert_eq!(
         memecoin_balance,
         meme_coin_result.initial_supply - burned_amount
@@ -181,9 +173,7 @@ fn test_memecoin_owner_mint() {
     );
     assert!(result.finalize.result.is_accept());
 
-    let memecoin_balance = result.finalize.execution_results[1]
-        .decode::<Amount>()
-        .unwrap();
+    let memecoin_balance = template_test.expect_return::<Amount>(1);
     assert_eq!(
         memecoin_balance,
         meme_coin_result.initial_supply + deposited_amount

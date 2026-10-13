@@ -6,7 +6,7 @@ fn it_works() {
 
     let counter_template = test.get_template_address("{{ project-name | upper_camel_case }}");
 
-    let result = test.execute_expect_success(
+    test.execute_expect_success(
         test.transaction()
             .allocate_component_address("addr")
             .call_function(counter_template, "with_address", args![Workspace("addr")])
@@ -18,8 +18,8 @@ fn it_works() {
         vec![test.owner_proof()]
     );
 
-    let v =     result.finalize.execution_results[2].decode::<u32>().unwrap();
+    let v = test.expect_return::<u32>(2);
     assert_eq!(v, 0);
-    let v =     result.finalize.execution_results[5].decode::<u32>().unwrap();
+    let v = test.expect_return::<u32>(5);
     assert_eq!(v, 101);
 }

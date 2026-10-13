@@ -14,7 +14,7 @@ struct AirdropResult {
 
 fn airdrop(test: &mut TemplateTest) -> AirdropResult {
     let (account_component, owner_proof, account_secret_key) = test.create_funded_account();
-    let result = test.execute_expect_success(
+    test.execute_expect_success(
         test.transaction()
             .call_function(
                 test.get_template_address("{{ project-name | upper_camel_case }}"),
@@ -25,9 +25,7 @@ fn airdrop(test: &mut TemplateTest) -> AirdropResult {
         vec![owner_proof.clone()],
     );
 
-    let airdrop_address = result.finalize.execution_results[0]
-        .decode::<ComponentAddress>()
-        .unwrap();
+    let airdrop_address = test.expect_return::<ComponentAddress>(0);
 
     AirdropResult {
         _account_address: account_component,
@@ -177,9 +175,7 @@ fn test_airdrop_claim_any_success() {
         vec![owner_proof.clone()],
     );
     assert!(result.finalize.result.is_accept());
-    let claim_count = result.finalize.execution_results[0]
-        .decode::<u32>()
-        .unwrap();
+    let claim_count = test.expect_return::<u32>(0);
     assert_eq!(claim_count, 0);
 
     // get vault balance
@@ -194,9 +190,7 @@ fn test_airdrop_claim_any_success() {
         vec![owner_proof.clone()],
     );
     assert!(result.finalize.result.is_accept());
-    let vault_balance = result.finalize.execution_results[0]
-        .decode::<Amount>()
-        .unwrap();
+    let vault_balance = test.expect_return::<Amount>(0);
     assert_eq!(vault_balance, 100);
 
     // claim
@@ -236,9 +230,7 @@ fn test_airdrop_claim_any_success() {
         vec![owner_proof.clone()],
     );
     assert!(result.finalize.result.is_accept());
-    let claim_count = result.finalize.execution_results[0]
-        .decode::<u32>()
-        .unwrap();
+    let claim_count = test.expect_return::<u32>(0);
     assert_eq!(claim_count, 1);
 
     // get vault balance again
@@ -253,9 +245,7 @@ fn test_airdrop_claim_any_success() {
         vec![owner_proof.clone()],
     );
     assert!(result.finalize.result.is_accept());
-    let vault_balance = result.finalize.execution_results[0]
-        .decode::<Amount>()
-        .unwrap();
+    let vault_balance = test.expect_return::<Amount>(0);
     assert_eq!(vault_balance, 99);
 }
 

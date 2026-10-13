@@ -11,7 +11,7 @@ fn test_fungible() {
 
     let (receiver_address, receiver_proof, receiver_secret_key) = template_test.create_empty_account();
 
-    let result = template_test.execute_expect_success(
+    template_test.execute_expect_success(
         template_test.transaction()
              .call_method(fungible_component, "resource_address", args![])
             .put_last_instruction_output_on_workspace("resource_address")
@@ -24,8 +24,8 @@ fn test_fungible() {
         vec![receiver_proof],
     );
 
-    let fungible_account_balance = result.finalize.execution_results[5].decode::<Amount>().unwrap();
-    let receiver_balance = result.finalize.execution_results[6].decode::<Amount>().unwrap();
+    let fungible_account_balance = template_test.expect_return::<Amount>(5);
+    let receiver_balance = template_test.expect_return::<Amount>(6);
     assert_eq!(
         fungible_account_balance,
         initial_supply - Amount::new(100)
