@@ -32,6 +32,12 @@ WASM_TEMPLATES=(empty no_std counter fungible nft swap meme_coin airdrop ico sta
 # Templates that have tests (swap has no tests)
 TEMPLATES_WITH_TESTS=(empty no_std counter fungible nft meme_coin airdrop ico stable_coin)
 
+# Deterministic non-interactive value for the copyright-holder placeholder (Issue #6).
+# Includes a regex metacharacter (the trailing period) so copyright checks below prove
+# they compare literal strings rather than accidentally matching as a regex.
+COPYRIGHT_HOLDER_CI_VALUE="CI Test Co."
+GUESSING_GAME_SENTINEL=""
+
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 BOLD='\033[1m'
@@ -74,7 +80,36 @@ fail() {
     fi
 }
 
+# Checks that a generated file contains an exact, whole-line, literal match for
+# $expected_line and does not contain the literal old fixed-holder $forbidden_line.
+# Uses `grep -xF` (fixed-string, whole-line) throughout so a value containing regex
+# metacharacters (e.g. the period in COPYRIGHT_HOLDER_CI_VALUE) cannot be misread as a
+# pattern and cannot produce a false-positive near-match.
+check_copyright_line() {
+    local file="$1"
+    local expected_line="$2"
+    local forbidden_line="$3"
+    local label="$4"
+
+    if [ ! -f "$file" ]; then
+        fail "$label (file not found)"
+        return
+    fi
+    if ! grep -qxF -- "$expected_line" "$file"; then
+        fail "$label (expected copyright line not found)"
+        return
+    fi
+    if grep -qxF -- "$forbidden_line" "$file"; then
+        fail "$label (old fixed copyright line still present)"
+        return
+    fi
+    pass "$label"
+}
+
 cleanup() {
+    if [ -n "$GUESSING_GAME_SENTINEL" ] && [ -e "$GUESSING_GAME_SENTINEL" ]; then
+        rm -f "$GUESSING_GAME_SENTINEL"
+    fi
     if ! $NO_CLEAN && [ -d "$TMPDIR_BASE" ]; then
         rm -rf "$TMPDIR_BASE"
     fi
@@ -118,7 +153,8 @@ for template in "${WASM_TEMPLATES[@]}"; do
         --name "test-$template" \
         --destination "$TMPDIR_BASE" \
         --define "authors=CI" \
-        --define "in_cargo_workspace=false" 2>&1; then
+        --define "in_cargo_workspace=false" \
+        --define "copyright-holder=$COPYRIGHT_HOLDER_CI_VALUE" 2>&1; then
         fail "$template (generate)"
         continue
     fi
@@ -129,6 +165,25 @@ for template in "${WASM_TEMPLATES[@]}"; do
     if [ ! -d "$generated_dir" ]; then
         fail "$template (generate - output dir not found)"
         continue
+    fi
+
+    # Issue #6: the copyright-holder placeholder only affects nft and stable_coin, whose
+    # source files carry a fixed "The Tari Project" holder. Other templates ignore the
+    # define entirely, so this check is scoped to just those two.
+    if [ "$template" = "nft" ]; then
+        check_copyright_line "$generated_dir/src/lib.rs" \
+            "//   Copyright 2022. $COPYRIGHT_HOLDER_CI_VALUE" \
+            "//   Copyright 2022. The Tari Project" \
+            "nft (copyright holder rendered)"
+    elif [ "$template" = "stable_coin" ]; then
+        check_copyright_line "$generated_dir/src/user_data.rs" \
+            "// Copyright 2024 $COPYRIGHT_HOLDER_CI_VALUE" \
+            "// Copyright 2024 The Tari Project" \
+            "stable_coin/user_data.rs (copyright holder rendered)"
+        check_copyright_line "$generated_dir/src/wrapped_exchange_token.rs" \
+            "// Copyright 2024 $COPYRIGHT_HOLDER_CI_VALUE" \
+            "// Copyright 2024 The Tari Project" \
+            "stable_coin/wrapped_exchange_token.rs (copyright holder rendered)"
     fi
 
     log "Building WASM: $template"
@@ -174,6 +229,49 @@ if (cd "$REPO_ROOT/examples/guessing_game/template" && cargo test 2>&1); then
 else
     fail "guessing_game/template (test)"
 fi
+
+log "Testing examples/guessing_game/template (cargo-generate copyright + build-artifact omission)"
+
+GUESSING_GAME_SRC="$REPO_ROOT/examples/guessing_game/template"
+
+# Collision-safe controlled sentinel, in addition to whatever real target/ the build above
+# just produced. Together these cover both required scenarios: a real build artifact and a
+# synthetic one. $$ (this script's PID) keeps concurrent runs from colliding; cleanup() removes
+# it on success, failure, and interruption.
+GUESSING_GAME_SENTINEL="$GUESSING_GAME_SRC/target/.cg-omission-sentinel-$$"
+mkdir -p "$(dirname "$GUESSING_GAME_SENTINEL")"
+echo "build-artifact-sentinel-$$" > "$GUESSING_GAME_SENTINEL"
+
+if cargo generate --path "$GUESSING_GAME_SRC" \
+    --name test-guessing-game-copyright \
+    --destination "$TMPDIR_BASE" \
+    --define "copyright-holder=$COPYRIGHT_HOLDER_CI_VALUE" 2>&1; then
+
+    guessing_generated_dir="$TMPDIR_BASE/test-guessing-game-copyright"
+    if [ ! -d "$guessing_generated_dir" ]; then
+        fail "guessing_game/template (generate - output dir not found)"
+    else
+        check_copyright_line "$guessing_generated_dir/src/lib.rs" \
+            "//   Copyright 2026 $COPYRIGHT_HOLDER_CI_VALUE" \
+            "//   Copyright 2026 The Tari Project" \
+            "guessing_game/template src/lib.rs (copyright holder rendered)"
+        check_copyright_line "$guessing_generated_dir/tests/test.rs" \
+            "//   Copyright 2025 $COPYRIGHT_HOLDER_CI_VALUE" \
+            "//   Copyright 2025 The Tari Project" \
+            "guessing_game/template tests/test.rs (copyright holder rendered)"
+
+        if find "$guessing_generated_dir" -iname target -o -iname "*.cg-omission-sentinel-*" | grep -q .; then
+            fail "guessing_game/template (build artifacts leaked into generated output)"
+        else
+            pass "guessing_game/template (build artifacts omitted from generated output)"
+        fi
+    fi
+else
+    fail "guessing_game/template (generate)"
+fi
+
+rm -f "$GUESSING_GAME_SENTINEL"
+GUESSING_GAME_SENTINEL=""
 
 log "Testing examples/guessing_game/cli"
 
