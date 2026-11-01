@@ -124,10 +124,11 @@ mod asd {
             let b_balance = self.get_pool_balance(b_resource);
 
             // calculate the amount of tokens to take from each pool
-            let decimals = Amount::from(1_000_000u64);
-            let lp_ratio = (lp_bucket.amount() * decimals) / (self.lp_total_supply() * decimals);
-            let a_amount = (lp_ratio.div_ceil(decimals)) * a_balance;
-            let b_amount = (lp_ratio.div_ceil(decimals)) * b_balance;
+            let total_lp = self.lp_total_supply();
+            assert!(!total_lp.is_zero(), "LP total supply is zero");
+            let lp_amount = lp_bucket.amount();
+            let a_amount = (lp_amount * a_balance) / total_lp;
+            let b_amount = (lp_amount * b_balance) / total_lp;
 
             // burn the LP tokens
             lp_bucket.burn();

@@ -246,6 +246,7 @@ mod template {
             let badge = self.user_badge_manager().get_non_fungible(&badge);
             let user = badge.get_data::<UserData>();
             let user_data = badge.get_mutable_data::<UserMutableData>();
+            assert!(!user_data.is_blacklisted, "User is blacklisted");
 
             let amount = confidential_bucket.amount();
             assert!(
@@ -306,6 +307,8 @@ mod template {
             let badge = badges.into_iter().next().unwrap();
             let badge = self.user_badge_manager().get_non_fungible(&badge);
             let user = badge.get_data::<UserData>();
+            let user_data = badge.get_mutable_data::<UserMutableData>();
+            assert!(!user_data.is_blacklisted, "User is blacklisted");
 
             let amount = wrapped_bucket.amount();
 
@@ -400,7 +403,7 @@ mod template {
         }
 
         pub fn set_user_exchange_limit(&mut self, user_id: UserId, limit: Amount) {
-            assert!(limit.is_positive(), "Exchange limit must be positive");
+            assert!(!limit.is_negative(), "Exchange limit cannot be negative");
             let non_fungible_id: NonFungibleId = user_id.into();
 
             let manager = self.user_badge_manager();
