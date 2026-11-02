@@ -24,6 +24,7 @@ fn it_increases_and_decreases_supply() {
         test.transaction()
             .create_proof(admin_account, admin_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
+            .authorize_proof("proof")
             .call_method(stable_coin_component, "increase_supply", args![123])
             .call_method(stable_coin_component, "total_supply", args![])
             .drop_all_proofs_in_workspace()
@@ -31,7 +32,7 @@ fn it_increases_and_decreases_supply() {
         vec![admin_proof.clone()],
     );
 
-    let total_supply = test.expect_return::<Amount>(3);
+    let total_supply = test.expect_return::<Amount>(4);
 
     assert_eq!(total_supply, 1_000_000_123);
 
@@ -39,6 +40,7 @@ fn it_increases_and_decreases_supply() {
         test.transaction()
             .create_proof(admin_account, admin_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
+            .authorize_proof("proof")
             .call_method(stable_coin_component, "decrease_supply", args![456])
             .call_method(stable_coin_component, "total_supply", args![])
             .drop_all_proofs_in_workspace()
@@ -46,7 +48,7 @@ fn it_increases_and_decreases_supply() {
         vec![admin_proof],
     );
 
-    let total_supply = test.expect_return::<Amount>(3);
+    let total_supply = test.expect_return::<Amount>(4);
 
     assert_eq!(total_supply, 1_000_000_123 - 456);
 }
@@ -74,6 +76,7 @@ fn it_prevents_unauthorised_users_from_transacting() {
             // Auth
             .create_proof(admin_account, admin_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
+            .authorize_proof("proof")
             // Withdraw for new stable coin customer
             .call_method(
                 stable_coin_component,
@@ -96,17 +99,12 @@ fn it_prevents_unauthorised_users_from_transacting() {
         test.transaction()
             .create_proof(alice_account, user_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
-            // A frame authorizes with the badges it is stamped with and the proofs it is passed
-            // as arguments, so the user badge reaches the account's own frame as an argument.
-            .call_method(
-                alice_account,
-                "withdraw_with_auth",
-                args![token_resource, 456, Workspace("proof")],
-            )
+            .authorize_proof("proof")
+            // The authorized user badge proof is lent to the account's frame, satisfying the
+            // token's withdraw rule.
+            .call_method(alice_account, "withdraw", args![token_resource, 456])
             .put_last_instruction_output_on_workspace("funds")
-            // `deposit_with_auth` is owner-restricted on an account, so a transfer to someone else
-            // uses plain `deposit`; the resource's authorization hook checks that the receiving
-            // account owns a user badge.
+            // The resource's authorization hook checks that the receiving account owns a user badge.
             .call_method(bob_account, "deposit", args![Workspace("funds")])
             .call_method(bob_account, "balance", args![token_resource])
             .drop_all_proofs_in_workspace()
@@ -140,6 +138,7 @@ fn it_allows_users_to_transact() {
             // Auth
             .create_proof(admin_account, admin_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
+            .authorize_proof("proof")
             // Give alice and bob authorisation to transact using the stable coin resource
             .call_method(
                 stable_coin_component,
@@ -170,17 +169,12 @@ fn it_allows_users_to_transact() {
         test.transaction()
             .create_proof(alice_account, user_badge_resource)
             .put_last_instruction_output_on_workspace("proof")
-            // A frame authorizes with the badges it is stamped with and the proofs it is passed
-            // as arguments, so the user badge reaches the account's own frame as an argument.
-            .call_method(
-                alice_account,
-                "withdraw_with_auth",
-                args![token_resource, 456, Workspace("proof")],
-            )
+            .authorize_proof("proof")
+            // The authorized user badge proof is lent to the account's frame, satisfying the
+            // token's withdraw rule.
+            .call_method(alice_account, "withdraw", args![token_resource, 456])
             .put_last_instruction_output_on_workspace("funds")
-            // `deposit_with_auth` is owner-restricted on an account, so a transfer to someone else
-            // uses plain `deposit`; the resource's authorization hook checks that the receiving
-            // account owns a user badge.
+            // The resource's authorization hook checks that the receiving account owns a user badge.
             .call_method(bob_account, "deposit", args![Workspace("funds")])
             .call_method(bob_account, "balance", args![token_resource])
             .drop_all_proofs_in_workspace()
@@ -188,7 +182,7 @@ fn it_allows_users_to_transact() {
         vec![alice_proof.clone()],
     );
 
-    let bob_balance = test.expect_return::<Amount>(5);
+    let bob_balance = test.expect_return::<Amount>(6);
     assert_eq!(bob_balance, 456);
 }
 
