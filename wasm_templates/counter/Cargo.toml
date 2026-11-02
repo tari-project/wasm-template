@@ -6,10 +6,10 @@ edition = "2024"
 
 
 [dependencies]
-tari_template_lib = "0.36"
+tari_template_lib = "0.37"
 
 [dev-dependencies]
-tari_template_test_tooling = "0.48"
+tari_template_test_tooling = "0.49"
 
 
 {% if in_cargo_workspace == "false" %}
