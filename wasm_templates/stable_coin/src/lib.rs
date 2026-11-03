@@ -74,11 +74,11 @@ mod template {
                 .burnable(require_admin.clone(), OWNER)
                 // A deposit is authorized by the hook below rather than by a rule. The rule would be
                 // evaluated in the receiving account's frame, and a sender cannot get a badge proof
-                // into an account it does not own - `deposit_with_auth` is owner-restricted. The hook
-                // can see the receiving account's state, so it checks badge ownership directly.
+                // into an account it does not own. The hook can see the receiving account's state,
+                // so it checks badge ownership directly.
                 .depositable(AccessRule::AllowAll, OWNER)
-                // A withdrawal is made by the owner, who passes their badge proof to the account's
-                // `withdraw_with_auth`; a proof passed as a call argument authorizes for that frame.
+                // A withdrawal is made by the owner, who authorizes their badge proof
+                // (`AuthorizeProof`) before calling the account's `withdraw`.
                 .withdrawable(require_user.clone(), OWNER)
                 .recallable(require_admin.clone(), OWNER)
                 .with_authorization_hook(component_alloc.get_address(), "authorize_user_deposit")
