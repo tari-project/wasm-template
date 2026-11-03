@@ -1,4 +1,4 @@
-//   Copyright 2025 The Tari Project
+//   Copyright 2025 {{ copyright-holder }}
 //   SPDX-License-Identifier: BSD-3-Clause
 
 use tari_template_lib::types::{ComponentAddress, NonFungibleAddress, NonFungibleId};

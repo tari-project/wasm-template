@@ -1,2 +1,5 @@
 [template]
-ignore = ["Cargo.lock"]
+ignore = ["Cargo.lock", "target"]
+
+[placeholders]
+copyright-holder = { prompt = "Who is the copyright holder?", type = "string" }
