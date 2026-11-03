@@ -738,6 +738,9 @@ async fn cmd_end_game(state_path: &Path, state: &mut State) -> anyhow::Result<()
     if !state.is_initialized() {
         anyhow::bail!("Wallet not initialized. Run `init` first.");
     }
+    if state.current_round.is_none() {
+        anyhow::bail!("No active round found in state. Run `start-game` first.");
+    }
 
     let component_addr = state
         .component_address
@@ -909,6 +912,11 @@ mod tests {
         };
 
         let err = cmd_guess(Path::new("unused.json"), &mut state, Some(5))
+            .await
+            .unwrap_err();
+        assert!(err.to_string().contains("No active round found in state"));
+
+        let err = cmd_end_game(Path::new("unused.json"), &mut state)
             .await
             .unwrap_err();
         assert!(err.to_string().contains("No active round found in state"));
