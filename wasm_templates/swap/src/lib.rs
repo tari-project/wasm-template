@@ -4,6 +4,7 @@ use tari_template_lib::prelude::*;
 #[template]
 mod asd {
     use super::*;
+    use tari_template_lib::types::precision::PrecisionAmount;
 
     // Constant product AMM
     pub struct {{ project-name | upper_camel_case }}Pool {
@@ -89,29 +90,87 @@ mod asd {
                 .withdraw(output_bucket_amount)
         }
 
-        pub fn add_liquidity(&mut self, a_bucket: Bucket, b_bucket: Bucket) -> Bucket {
+        /// Adds liquidity to the pool, minting LP tokens in return.
+        ///
+        /// Mints the most LP both buckets can pay for and takes from each bucket the share of its reserve that LP is
+        /// worth, rounded up in favour of the pool. The rest of both buckets is returned as change.
+        /// Returns `(lp_tokens, change_a, change_b)`, where the change buckets correspond to `a_bucket`/`b_bucket`;
+        /// either may be empty.
+        pub fn add_liquidity(&mut self, mut a_bucket: Bucket, mut b_bucket: Bucket) -> (Bucket, Bucket, Bucket) {
+            const OVERFLOW_MSG: &str = "Overflow when calculating LP token mint amount";
+
             // check that the buckets are correct
             let a_resource = a_bucket.resource_address();
             let b_resource = b_bucket.resource_address();
             self.check_pool_resources(a_resource, b_resource);
 
-            // extract the bucket amounts for later
-            let a_amount = a_bucket.amount();
-            let b_amount = b_bucket.amount();
+            // Compute in 192-bit precision: `Amount` products of two large balances can overflow
+            let a_amount = a_bucket.amount().into_precision_amount();
+            let b_amount = b_bucket.amount().into_precision_amount();
+            assert!(
+                a_amount.is_positive() && b_amount.is_positive(),
+                "Cannot add zero liquidity"
+            );
+
+            let a_reserve = self.get_pool_balance(a_resource).into_precision_amount();
+            let b_reserve = self.get_pool_balance(b_resource).into_precision_amount();
+            let lp_supply = self.lp_total_supply().into_precision_amount();
+
+            let (lp_mint_amount, a_contribution, b_contribution) = if lp_supply.is_zero() {
+                // Initial liquidity: there is no existing price to preserve, so the first provider sets it. Take the
+                // full contribution and mint LP equal to the geometric mean `sqrt(a * b)`.
+                assert!(
+                    a_reserve.is_zero() && b_reserve.is_zero(),
+                    "Inconsistent pool state: zero LP supply with non-zero reserve"
+                );
+                let mint = a_amount
+                    .checked_mul(b_amount)
+                    .and_then(|product| product.checked_sqrt())
+                    .expect(OVERFLOW_MSG);
+                (mint, a_amount, b_amount)
+            } else {
+                assert!(
+                    a_reserve.is_positive() && b_reserve.is_positive(),
+                    "Inconsistent pool state: non-zero LP supply with zero reserve"
+                );
+                // Multiply before dividing: dividing first truncates the ratio to zero whenever a contribution is
+                // smaller than its reserve. `mint <= amount * lp_supply / reserve` keeps each rounded-up take within
+                // its bucket.
+                let mint_for = |amount: PrecisionAmount, reserve: PrecisionAmount| {
+                    amount
+                        .checked_mul(lp_supply)
+                        .and_then(|num| num.checked_div(reserve))
+                        .expect(OVERFLOW_MSG)
+                };
+                let take_for = |mint: PrecisionAmount, reserve: PrecisionAmount| {
+                    mint.checked_mul(reserve)
+                        .and_then(|num| num.checked_div_ceil(lp_supply))
+                        .expect(OVERFLOW_MSG)
+                };
+
+                let mint = mint_for(a_amount, a_reserve).min(mint_for(b_amount, b_reserve));
+                (mint, take_for(mint, a_reserve), take_for(mint, b_reserve))
+            };
+
+            let lp_mint_amount = Amount::try_from(lp_mint_amount).expect("LP mint amount conversion failed");
+            let a_contribution = Amount::try_from(a_contribution).expect("A contribution conversion failed");
+            let b_contribution = Amount::try_from(b_contribution).expect("B contribution conversion failed");
+
+            // Reject dust contributions that round down to a zero contribution or zero mint
+            assert!(
+                a_contribution.is_positive() && b_contribution.is_positive() && lp_mint_amount.is_positive(),
+                "Contribution too small relative to pool reserves to mint any LP tokens"
+            );
 
             // add the liquidity to the pool
-            self.pools.get_mut(&a_resource).unwrap().deposit(a_bucket);
-            self.pools.get_mut(&b_resource).unwrap().deposit(b_bucket);
+            let contributed_a = a_bucket.take(a_contribution);
+            let contributed_b = b_bucket.take(b_contribution);
+            self.pools.get_mut(&a_resource).unwrap().deposit(contributed_a);
+            self.pools.get_mut(&b_resource).unwrap().deposit(contributed_b);
 
-            // get the bucket/pool ratios
-            let a_ratio = self.get_pool_ratio(a_resource, a_amount);
-            let b_ratio = self.get_pool_ratio(b_resource, b_amount);
-
-            // the amount of new lp tokens are proportional to the bucket-pool ratios
-            let new_lp_amount = a_ratio * a_amount + b_ratio * b_amount;
-
-            // mint and return the new lp tokens
-            self.lp_resource.mint_fungible(new_lp_amount)
+            // mint the new lp tokens and return them with the unused remainder of each bucket
+            let lp_tokens = self.lp_resource.mint_fungible(lp_mint_amount);
+            (lp_tokens, a_bucket, b_bucket)
         }
 
         pub fn remove_liquidity(&mut self, lp_bucket: Bucket) -> (Bucket, Bucket) {
@@ -124,10 +183,17 @@ mod asd {
             let b_balance = self.get_pool_balance(b_resource);
 
             // calculate the amount of tokens to take from each pool
-            let decimals = Amount::from(1_000_000u64);
-            let lp_ratio = (lp_bucket.amount() * decimals) / (self.lp_total_supply() * decimals);
-            let a_amount = (lp_ratio.div_ceil(decimals)) * a_balance;
-            let b_amount = (lp_ratio.div_ceil(decimals)) * b_balance;
+            let total_lp = self.lp_total_supply();
+            assert!(!total_lp.is_zero(), "LP total supply is zero");
+            let lp_amount = lp_bucket.amount();
+            let a_amount = Self::pro_rata_share(lp_amount, a_balance, total_lp);
+            let b_amount = Self::pro_rata_share(lp_amount, b_balance, total_lp);
+
+            // A redemption that rounds down to zero of either reserve would burn LP for nothing
+            assert!(
+                a_amount.is_positive() && b_amount.is_positive(),
+                "Redemption amount too small to withdraw any tokens from the pool"
+            );
 
             // burn the LP tokens
             lp_bucket.burn();
@@ -164,14 +230,15 @@ mod asd {
             vault.balance()
         }
 
-        pub fn get_pool_ratio(&self, resource: ResourceAddress, amount: Amount) -> Amount {
-            let balance = self.get_pool_balance(resource);
-
-            if balance.is_zero() {
-                Amount::ONE
-            } else {
-                amount / balance
-            }
+        /// `amount * reserve / total`, rounded down in favour of the pool. Computed in 192-bit precision so that
+        /// the product cannot overflow.
+        fn pro_rata_share(amount: Amount, reserve: Amount, total: Amount) -> Amount {
+            let share = amount
+                .into_precision_amount()
+                .checked_mul(reserve.into_precision_amount())
+                .and_then(|num| num.checked_div(total.into_precision_amount()))
+                .expect("Overflow when calculating redemption amount");
+            Amount::try_from(share).expect("Redemption amount conversion failed")
         }
 
         pub fn lp_total_supply(&self) -> Amount {

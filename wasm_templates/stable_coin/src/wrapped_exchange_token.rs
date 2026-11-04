@@ -1,4 +1,4 @@
-// Copyright 2024 The Tari Project
+// Copyright 2024 {{ authors }}
 // SPDX-License-Identifier: BSD-3-Clause
 
 use tari_template_lib::models::Vault;
@@ -17,10 +17,7 @@ impl ExchangeFee {
     pub fn calculate_fee(&self, amount: Amount) -> Amount {
         match self {
             ExchangeFee::Fixed(fee) => *fee,
-            ExchangeFee::Percentage(percentage) => {
-                let inv_perc = 100 / *percentage;
-                div_rounded(amount, inv_perc.into()).try_into().unwrap()
-            }
+            ExchangeFee::Percentage(percentage) => div_rounded(amount, (*percentage).into()),
         }
     }
 }
@@ -79,5 +76,13 @@ mod tests {
         assert_eq!(div_rounded(100u64, 5), 5);
         assert_eq!(div_rounded(123u64, 5), 6);
         assert_eq!(div_rounded(130u64, 5), 7);
+    }
+
+    #[test]
+    fn test_calculate_fee() {
+        assert_eq!(ExchangeFee::Fixed(Amount::from(5u64)).calculate_fee(Amount::from(100u64)), 5);
+        assert_eq!(ExchangeFee::Percentage(0).calculate_fee(Amount::from(100u64)), 0);
+        assert_eq!(ExchangeFee::Percentage(1).calculate_fee(Amount::from(100u64)), 1);
+        assert_eq!(ExchangeFee::Percentage(5).calculate_fee(Amount::from(130u64)), 7);
     }
 }

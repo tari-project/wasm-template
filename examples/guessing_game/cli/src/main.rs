@@ -87,16 +87,17 @@ struct User {
 }
 
 impl User {
-    fn to_wallet(&self, network: Network) -> OotleWallet {
-        let acc_bytes =
-            Vec::from_hex(&self.account_secret_hex).expect("Invalid account secret hex");
-        let view_bytes = Vec::from_hex(&self.view_secret_hex).expect("Invalid view secret hex");
+    fn to_wallet(&self, network: Network) -> anyhow::Result<OotleWallet> {
+        let acc_bytes = Vec::from_hex(&self.account_secret_hex)
+            .map_err(|e| anyhow::anyhow!("Invalid account secret hex: {e}"))?;
+        let view_bytes = Vec::from_hex(&self.view_secret_hex)
+            .map_err(|e| anyhow::anyhow!("Invalid view secret hex: {e}"))?;
         let acc_sk = RistrettoSecretKey::from_canonical_bytes(&acc_bytes)
-            .expect("Invalid account key bytes");
-        let view_sk =
-            RistrettoSecretKey::from_canonical_bytes(&view_bytes).expect("Invalid view key bytes");
+            .map_err(|e| anyhow::anyhow!("Invalid account key bytes: {e}"))?;
+        let view_sk = RistrettoSecretKey::from_canonical_bytes(&view_bytes)
+            .map_err(|e| anyhow::anyhow!("Invalid view key bytes: {e}"))?;
         let secret = OotleSecretKey::new(network, acc_sk, view_sk);
-        OotleWallet::from(PrivateKeyProvider::new(secret))
+        Ok(OotleWallet::from(PrivateKeyProvider::new(secret)))
     }
 }
 
@@ -266,7 +267,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Create => cmd_create(&state_path, &mut state).await?,
         Commands::StartGame { nft_id } => cmd_start_game(&state_path, &mut state, &nft_id).await?,
         Commands::Guess { number } => cmd_guess(&state_path, &mut state, number).await?,
-        Commands::EndGame => cmd_end_game(&mut state).await?,
+        Commands::EndGame => cmd_end_game(&state_path, &mut state).await?,
         Commands::AddUser => cmd_add_user(&state_path, &mut state).await?,
         Commands::Show => cmd_show(&state).await?,
     }
@@ -358,12 +359,13 @@ async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
         .connect(&indexer_url)
         .await?;
 
-    let account_addr = provider.default_signer_address().to_account_address();
+    let ootle_addr = provider.default_signer_address().clone();
+    let account_addr = ootle_addr.to_account_address();
 
     println!("🚰 Creating account and funding via faucet...");
     println!(
         "  📬 OotleAddress (share this to receive funds): {}",
-        provider.default_signer_address()
+        ootle_addr
     );
     println!("  🏦 Account component: {account_addr}");
 
@@ -409,10 +411,7 @@ async fn cmd_init(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
 
     println!();
     println!("🎉 Initialization complete!");
-    println!(
-        "  📬 OotleAddress:     {}",
-        state.account_address.as_ref().display()
-    );
+    println!("  📬 OotleAddress:     {ootle_addr}");
     println!("  🏦 Account address:  {account_addr}");
     println!("  👥 Players created:  {}", state.users.len());
     println!();
@@ -579,6 +578,9 @@ async fn cmd_guess(state_path: &Path, state: &mut State, number: Option<u8>) -> 
             "No users found in state. Add a user with `add-user` before submitting guesses."
         );
     }
+    if state.current_round.is_none() {
+        anyhow::bail!("No active round found in state. Run `start-game` first.");
+    }
     let resource_address = state
         .resource_address
         .ok_or_else(|| anyhow::anyhow!("No resource address in state. Run `create` first."))?;
@@ -626,7 +628,7 @@ async fn cmd_guess(state_path: &Path, state: &mut State, number: Option<u8>) -> 
         .component_address
         .ok_or_else(|| anyhow::anyhow!("No component address in state. Run `create` first."))?;
 
-    let wallet = user.to_wallet(network);
+    let wallet = user.to_wallet(network)?;
     let indexer_url = state.indexer_url.clone();
 
     let mut provider = ProviderBuilder::new()
@@ -732,9 +734,12 @@ async fn create_user(
 
 // ─────────────────────────────────── end-game ────────────────────────────────
 
-async fn cmd_end_game(state: &mut State) -> anyhow::Result<()> {
+async fn cmd_end_game(state_path: &Path, state: &mut State) -> anyhow::Result<()> {
     if !state.is_initialized() {
         anyhow::bail!("Wallet not initialized. Run `init` first.");
+    }
+    if state.current_round.is_none() {
+        anyhow::bail!("No active round found in state. Run `start-game` first.");
     }
 
     let component_addr = state
@@ -772,7 +777,7 @@ async fn cmd_end_game(state: &mut State) -> anyhow::Result<()> {
         .as_ref()
         .map(|r| NonFungibleAddress::from_str(&r.prize))
         .ok_or_else(|| anyhow::anyhow!("No active round found in state. Run `start-game` first."))?
-        .expect("Invalid prize resource address in state");
+        .map_err(|e| anyhow::anyhow!("Invalid prize resource address in state: {e}"))?;
 
     println!("🏆 Ending the round and paying out winner...");
     let receipt = build_and_send(
@@ -787,6 +792,9 @@ async fn cmd_end_game(state: &mut State) -> anyhow::Result<()> {
         want_list,
     )
     .await?;
+
+    state.current_round = None;
+    save_state(state_path, state)?;
 
     let event = receipt
         .events
@@ -864,4 +872,53 @@ async fn cmd_show(state: &State) -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn cli_definition_and_template_address_parsing_work() {
+        Cli::command().debug_assert();
+
+        let hex = "0101010101010101010101010101010101010101010101010101010101010101";
+        let from_raw = parse_stored_template_address(hex).unwrap();
+        let from_prefixed = parse_stored_template_address(&format!("template_{hex}")).unwrap();
+        assert_eq!(from_raw, from_prefixed);
+    }
+
+    #[tokio::test]
+    async fn guess_and_end_game_reject_missing_active_round() {
+        let secret = OotleSecretKey::random(Network::LocalNet);
+        let account_address = secret.to_address().to_account_address();
+        let mut state = State {
+            account_secret_hex: Some(secret.account_secret().to_hex()),
+            view_secret_hex: Some(secret.view_only_secret().to_hex()),
+            network: "LocalNet".to_string(),
+            indexer_url: "http://127.0.0.1:12500".to_string(),
+            account_address: Some(account_address),
+            template_address: None,
+            resource_address: None,
+            component_address: None,
+            users: vec![User {
+                name: "alice".to_string(),
+                account_secret_hex: secret.account_secret().to_hex(),
+                view_secret_hex: secret.view_only_secret().to_hex(),
+                account_address,
+            }],
+            current_round: None,
+        };
+
+        let err = cmd_guess(Path::new("unused.json"), &mut state, Some(5))
+            .await
+            .unwrap_err();
+        assert!(err.to_string().contains("No active round found in state"));
+
+        let err = cmd_end_game(Path::new("unused.json"), &mut state)
+            .await
+            .unwrap_err();
+        assert!(err.to_string().contains("No active round found in state"));
+    }
 }
