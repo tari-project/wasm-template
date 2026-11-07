@@ -16,6 +16,7 @@ mod {{ project-name | snake_case }}_ico {
             initial_supply: Amount,
             price: Amount,
         ) -> (Component<Self>, Bucket) {
+            assert!(price.is_positive(), "ICO token price must be positive");
             let coins = ResourceBuilder::public_fungible()
                 .with_token_symbol(symbol)
                 .with_owner_rule(OwnerRule::OwnedBySigner)

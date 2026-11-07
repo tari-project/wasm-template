@@ -67,17 +67,35 @@ mod asd {
             // apply the fee to the input bucket
             // so the user will get a lesser amount of tokens than the theoretical (for the gain of the LP holders)
             let input_bucket_balance = input_bucket.amount();
-            let effective_input_balance = input_bucket_balance - (input_bucket_balance * Amount::from(self.fee)) / Amount::from(1000u64);
+            assert!(!input_bucket_balance.is_zero(), "Swap input amount must be greater than zero");
+            let fee_amount = input_bucket_balance
+                .into_precision_amount()
+                .checked_mul(Amount::from(self.fee).into_precision_amount())
+                .and_then(|num| num.checked_div_ceil(Amount::from(1000u64).into_precision_amount()))
+                .expect("Overflow when calculating swap fee");
+            let fee_amount = Amount::try_from(fee_amount).expect("Swap fee conversion failed");
+            let effective_input_balance = input_bucket_balance - fee_amount;
 
             // recalculate the new vault balances for the swap
             // constant product AMM formula is "k = a * b"
-            // so the new output vault balance should be "b = k / a"
-            let k = input_pool_balance * output_pool_balance;
+            // so the new output vault balance should be "b = ceil(k / a)" to preserve the pool invariant
+            let k = input_pool_balance
+                .into_precision_amount()
+                .checked_mul(output_pool_balance.into_precision_amount())
+                .expect("Overflow when calculating pool invariant k");
             let new_input_pool_balance = input_pool_balance + effective_input_balance;
-            let new_output_pool_balance = k / new_input_pool_balance;
+            let new_output_pool_balance = k
+                .checked_div_ceil(new_input_pool_balance.into_precision_amount())
+                .expect("Overflow when calculating new output pool balance");
+            let new_output_pool_balance =
+                Amount::try_from(new_output_pool_balance).expect("New output pool balance conversion failed");
 
             // calculate the amount of output tokens to return to the user
             let output_bucket_amount = output_pool_balance - new_output_pool_balance;
+            assert!(
+                output_bucket_amount.is_positive(),
+                "Swap input amount too small to receive any output tokens"
+            );
 
             // perform the swap
             self.pools
