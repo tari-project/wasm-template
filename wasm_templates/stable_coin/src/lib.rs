@@ -403,7 +403,6 @@ mod template {
         }
 
         pub fn set_user_exchange_limit(&mut self, user_id: UserId, limit: Amount) {
-            assert!(!limit.is_negative(), "Exchange limit cannot be negative");
             let non_fungible_id: NonFungibleId = user_id.into();
 
             let manager = self.user_badge_manager();
