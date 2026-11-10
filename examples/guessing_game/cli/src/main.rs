@@ -502,6 +502,12 @@ async fn cmd_start_game(
     if !state.is_initialized() {
         anyhow::bail!("Wallet not initialized. Run `init` first.");
     }
+    if state.current_round.is_some() {
+        anyhow::bail!("A round is already in progress. Run `end-game` first.");
+    }
+    if nft_id_arg.trim().is_empty() {
+        anyhow::bail!("NFT ID cannot be empty.");
+    }
 
     let component_addr = state
         .component_address
@@ -581,6 +587,13 @@ async fn cmd_guess(state_path: &Path, state: &mut State, number: Option<u8>) -> 
     if state.current_round.is_none() {
         anyhow::bail!("No active round found in state. Run `start-game` first.");
     }
+    if state
+        .current_round
+        .as_ref()
+        .is_some_and(|r| r.guesses.len() >= 5)
+    {
+        anyhow::bail!("Maximum of 5 guesses reached for this round. Run `end-game` first.");
+    }
     let resource_address = state
         .resource_address
         .ok_or_else(|| anyhow::anyhow!("No resource address in state. Run `create` first."))?;
@@ -604,6 +617,9 @@ async fn cmd_guess(state_path: &Path, state: &mut State, number: Option<u8>) -> 
         .items(&user_names)
         .interact()?;
     let user = &state.users[user_idx];
+    if round_guesses.is_some_and(|gs| gs.iter().any(|g| g.player_name == user.name)) {
+        anyhow::bail!("Player '{}' has already guessed in this round.", user.name);
+    }
     let user_name = user.name.clone();
 
     let number = if let Some(n) = number {
@@ -920,5 +936,54 @@ mod tests {
             .await
             .unwrap_err();
         assert!(err.to_string().contains("No active round found in state"));
+    }
+
+    #[tokio::test]
+    async fn start_game_and_guess_reject_duplicate_round_and_full_guesses() {
+        let secret = OotleSecretKey::random(Network::LocalNet);
+        let account_address = secret.to_address().to_account_address();
+        let mut state = State {
+            account_secret_hex: Some(secret.account_secret().to_hex()),
+            view_secret_hex: Some(secret.view_only_secret().to_hex()),
+            network: "LocalNet".to_string(),
+            indexer_url: "http://127.0.0.1:12500".to_string(),
+            account_address: Some(account_address),
+            template_address: None,
+            resource_address: None,
+            component_address: None,
+            users: vec![User {
+                name: "alice".to_string(),
+                account_secret_hex: secret.account_secret().to_hex(),
+                view_secret_hex: secret.view_only_secret().to_hex(),
+                account_address,
+            }],
+            current_round: Some(Round {
+                prize: "nft_1".to_string(),
+                guesses: (0..5)
+                    .map(|i| PlayerGuess {
+                        player_name: format!("p{i}"),
+                        guess: i,
+                    })
+                    .collect(),
+            }),
+        };
+
+        let err = cmd_start_game(Path::new("unused.json"), &mut state, "round-2")
+            .await
+            .unwrap_err();
+        assert!(err.to_string().contains("A round is already in progress"));
+
+        let err = cmd_guess(Path::new("unused.json"), &mut state, Some(5))
+            .await
+            .unwrap_err();
+        assert!(err
+            .to_string()
+            .contains("Maximum of 5 guesses reached for this round"));
+
+        state.current_round = None;
+        let err = cmd_start_game(Path::new("unused.json"), &mut state, "   ")
+            .await
+            .unwrap_err();
+        assert!(err.to_string().contains("NFT ID cannot be empty"));
     }
 }

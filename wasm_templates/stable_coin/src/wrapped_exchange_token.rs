@@ -17,7 +17,13 @@ impl ExchangeFee {
     pub fn calculate_fee(&self, amount: Amount) -> Amount {
         match self {
             ExchangeFee::Fixed(fee) => *fee,
-            ExchangeFee::Percentage(percentage) => div_rounded(amount, (*percentage).into()),
+            ExchangeFee::Percentage(percentage) => {
+                assert!(
+                    *percentage <= 100,
+                    "Exchange fee percentage cannot exceed 100%"
+                );
+                div_rounded(amount, (*percentage).into())
+            }
         }
     }
 }
@@ -52,14 +58,15 @@ impl WrappedExchangeToken {
 fn div_rounded<A: Into<Amount>>(v: A, p: A) -> Amount {
     let v = v.into();
     let p = p.into();
-    // f and b are the division to 3 decimals
-    let f = (v * Amount::ONE_THOUSAND) * p / Amount::ONE_HUNDRED;
-    let b = v * p / Amount::ONE_HUNDRED;
-    let c = f - (b * Amount::ONE_THOUSAND);
+    let product = v
+        .checked_mul(p)
+        .expect("Overflow when calculating percentage fee");
+    let b = product / Amount::ONE_HUNDRED;
+    let remainder = product % Amount::ONE_HUNDRED;
 
     // If the decimal is greater or equal to 0.5, we round up
-    if c >= 500 {
-        (f / Amount::ONE_THOUSAND) + Amount::ONE
+    if remainder >= Amount::from(50u64) {
+        b + Amount::ONE
     } else {
         b
     }
@@ -84,5 +91,12 @@ mod tests {
         assert_eq!(ExchangeFee::Percentage(0).calculate_fee(Amount::from(100u64)), 0);
         assert_eq!(ExchangeFee::Percentage(1).calculate_fee(Amount::from(100u64)), 1);
         assert_eq!(ExchangeFee::Percentage(5).calculate_fee(Amount::from(130u64)), 7);
+        assert_eq!(ExchangeFee::Percentage(100).calculate_fee(Amount::from(130u64)), 130);
+    }
+
+    #[test]
+    #[should_panic(expected = "Exchange fee percentage cannot exceed 100%")]
+    fn test_calculate_fee_rejects_percentage_over_100() {
+        ExchangeFee::Percentage(101).calculate_fee(Amount::from(100u64));
     }
 }
