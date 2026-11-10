@@ -186,6 +186,78 @@ fn it_allows_users_to_transact() {
     assert_eq!(bob_balance, 456);
 }
 
+#[test]
+fn it_rejects_zero_net_wrapped_exchange_and_non_positive_supply_ops() {
+    let TestSetup {
+        mut test,
+        stable_coin_component,
+        admin_proof,
+        admin_key,
+        admin_account,
+        admin_badge_resource,
+        user_badge_resource,
+        token_resource,
+        ..
+    } = setup();
+
+    let (alice_account, alice_proof, alice_key) = test.create_empty_account();
+
+    // Provision Alice with user badge and 10 stable coins
+    test.execute_expect_success(
+        test.transaction()
+            .create_proof(admin_account, admin_badge_resource)
+            .put_last_instruction_output_on_workspace("proof")
+            .authorize_proof("proof")
+            .call_method(
+                stable_coin_component,
+                "create_new_user",
+                args![1, alice_account],
+            )
+            .put_last_instruction_output_on_workspace("alice_badge")
+            .call_method(stable_coin_component, "withdraw", args![10])
+            .put_last_instruction_output_on_workspace("funds")
+            .call_method(alice_account, "deposit", args![Workspace("alice_badge")])
+            .call_method(alice_account, "deposit", args![Workspace("funds")])
+            .drop_all_proofs_in_workspace()
+            .build_and_seal(&admin_key),
+        vec![admin_proof.clone()],
+    );
+
+    // Exchanging 5 stable coins (equal to Fixed(5) fee) would yield 0 wrapped tokens and must fail
+    let reason = test.execute_expect_failure(
+        test.transaction()
+            .create_proof(alice_account, user_badge_resource)
+            .put_last_instruction_output_on_workspace("proof")
+            .authorize_proof("proof")
+            .call_method(alice_account, "withdraw", args![token_resource, 5])
+            .put_last_instruction_output_on_workspace("tokens")
+            .call_method(
+                stable_coin_component,
+                "exchange_stable_for_wrapped_tokens",
+                args![Workspace("proof"), Workspace("tokens")],
+            )
+            .put_last_instruction_output_on_workspace("wrapped")
+            .call_method(alice_account, "deposit", args![Workspace("wrapped")])
+            .drop_all_proofs_in_workspace()
+            .build_and_seal(&alice_key),
+        vec![alice_proof],
+    );
+    assert_reject_reason(reason, "Insufficient funds to pay exchange fee");
+
+    // Admin supply operations with zero amount must fail
+    let reason = test.execute_expect_failure(
+        test.transaction()
+            .create_proof(admin_account, admin_badge_resource)
+            .put_last_instruction_output_on_workspace("proof")
+            .authorize_proof("proof")
+            .call_method(stable_coin_component, "increase_supply", args![0])
+            .drop_all_proofs_in_workspace()
+            .build_and_seal(&admin_key),
+        vec![admin_proof],
+    );
+    assert_reject_reason(reason, "Increase amount must be positive");
+}
+
 struct TestSetup {
     test: TemplateTest,
     stable_coin_component: ComponentAddress,

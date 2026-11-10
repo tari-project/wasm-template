@@ -11,11 +11,13 @@ mod nft_marketplace_index {
     }
 
     impl AuctionIndex {
-        pub fn new(auction_template: TemplateAddress) -> Self {
-            Self {
+        pub fn new(auction_template: TemplateAddress) -> Component<Self> {
+            Component::new(Self {
                 auction_template,
                 auctions: BTreeMap::new()
-            }
+            })
+            .with_access_rules(AccessRules::allow_all())
+            .create()
         }
 
         // convenience method for external APIs and interfaces
@@ -34,6 +36,11 @@ mod nft_marketplace_index {
             buy_price: Option<Amount>,
             epoch_period: u64,
         ) -> (ComponentAddress, Bucket) {
+            assert!(epoch_period > 0, "Invalid auction period");
+            let ending_epoch = Consensus::current_epoch()
+                .checked_add(epoch_period)
+                .expect("Epoch overflow");
+
             // init the auction component
             let (auction_component, seller_badge): (ComponentAddress, Bucket) = TemplateManager::get(self.auction_template)
                 .call("new", args![
@@ -45,7 +52,6 @@ mod nft_marketplace_index {
                 ]);
 
             // add the new auction component to the index
-            let ending_epoch = Consensus::current_epoch() + epoch_period;
             if let Some(auctions) = self.auctions.get_mut(&ending_epoch) {
                 auctions.push(auction_component);
             } else {

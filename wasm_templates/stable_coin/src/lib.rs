@@ -158,6 +158,11 @@ mod template {
 
         /// Increase token supply by amount.
         pub fn increase_supply(&mut self, amount: Amount) {
+            assert!(amount.is_positive(), "Increase amount must be positive");
+            let new_total_supply = self
+                .total_supply
+                .checked_add(amount)
+                .expect("Total supply overflow");
             let proof = ConfidentialOutputStatement::mint_revealed(amount);
             // A revealed-only mint creates no confidential commitments, so there are no
             // commitment value proofs to supply.
@@ -165,7 +170,7 @@ mod template {
                 .token_vault_manager()
                 .mint_confidential(proof, BTreeMap::new());
             self.token_vault.deposit(new_tokens);
-            self.total_supply += amount;
+            self.total_supply = new_total_supply;
 
             if let Some(ref mut wrapped_token) = self.wrapped_token {
                 let new_tokens =
@@ -178,11 +183,16 @@ mod template {
 
         /// Decrease token supply by amount.
         pub fn decrease_supply(&mut self, amount: Amount) {
+            assert!(amount.is_positive(), "Decrease amount must be positive");
+            let new_total_supply = self
+                .total_supply
+                .checked_sub(amount)
+                .expect("Insufficient total supply");
             let proof = ConfidentialWithdrawProof::revealed_withdraw(amount);
 
             let tokens = self.token_vault.withdraw_confidential(proof);
             tokens.burn();
-            self.total_supply -= amount;
+            self.total_supply = new_total_supply;
 
             if let Some(ref mut wrapped_token) = self.wrapped_token {
                 let wrapped_tokens = wrapped_token.vault_mut().withdraw(amount);
@@ -200,6 +210,7 @@ mod template {
         }
 
         pub fn withdraw(&mut self, amount: Amount) -> Bucket {
+            assert!(amount.is_positive(), "Withdraw amount must be positive");
             let proof = ConfidentialWithdrawProof::revealed_withdraw(amount);
             let bucket = self.token_vault.withdraw_confidential(proof);
             emit_event(
@@ -210,7 +221,13 @@ mod template {
         }
 
         pub fn deposit(&mut self, bucket: Bucket) {
+            assert_eq!(
+                bucket.resource_address(),
+                self.token_vault.resource_address(),
+                "The bucket must contain the same resource as the token vault"
+            );
             let amount = bucket.amount();
+            assert!(amount.is_positive(), "Deposit amount must be positive");
             self.token_vault.deposit(bucket);
             emit_event("deposit", [("amount", amount.to_string())]);
         }
@@ -254,18 +271,19 @@ mod template {
                 "Exchange limit exceeded"
             );
 
-            self.set_user_wrapped_exchange_limit(
-                user.user_id,
-                user_data.wrapped_exchange_limit - amount,
-            );
-
             let fee = self
                 .wrapped_token_mut()
                 .exchange_fee()
                 .calculate_fee(amount);
             let new_amount = amount
                 .checked_sub(fee)
+                .filter(|a| a.is_positive())
                 .expect("Insufficient funds to pay exchange fee");
+
+            self.set_user_wrapped_exchange_limit(
+                user.user_id,
+                user_data.wrapped_exchange_limit - amount,
+            );
 
             self.token_vault.deposit(confidential_bucket);
 
