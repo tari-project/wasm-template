@@ -309,3 +309,72 @@ fn test_airdrop_claim_any_already_claimed() {
 
     assert_reject_reason(reject_reason, "is not in allow list or has already been claimed");
 }
+
+#[test]
+fn test_airdrop_rejects_readding_claimed_recipient_and_exceeding_total_supply() {
+    let mut test = TemplateTest::my_crate();
+    let airdrop_result = airdrop(&mut test);
+    let (first_account, owner_proof, account_secret_key) = test.create_funded_account();
+
+    // Open airdrop, add first recipient, and claim 1 NFT
+    test.execute_expect_success(
+        test.transaction()
+            .call_method(airdrop_result.airdrop_address, "open_airdrop", args![])
+            .call_method(
+                airdrop_result.airdrop_address,
+                "add_recipient",
+                args![first_account],
+            )
+            .call_method(
+                airdrop_result.airdrop_address,
+                "claim_any",
+                args![first_account],
+            )
+            .put_last_instruction_output_on_workspace("airdrop")
+            .call_method(first_account, "deposit", args![Workspace("airdrop")])
+            .build_and_seal(&account_secret_key),
+        vec![owner_proof.clone()],
+    );
+
+    // Re-adding an address that already claimed must fail
+    let reject_reason = test.execute_expect_failure(
+        test.transaction()
+            .call_method(
+                airdrop_result.airdrop_address,
+                "add_recipient",
+                args![first_account],
+            )
+            .build_and_seal(&account_secret_key),
+        vec![owner_proof.clone()],
+    );
+    assert_reject_reason(reject_reason, "Address has already claimed");
+
+    // Add 99 more recipients (bringing claimed + allow_list to 100)
+    for _ in 0..99 {
+        let (recipient_account, _, _) = test.create_empty_account();
+        test.execute_expect_success(
+            test.transaction()
+                .call_method(
+                    airdrop_result.airdrop_address,
+                    "add_recipient",
+                    args![recipient_account],
+                )
+                .build_and_seal(&account_secret_key),
+            vec![owner_proof.clone()],
+        );
+    }
+
+    // Adding a 101st total recipient must fail even though allow_list.len() is 99
+    let (extra_account, _, _) = test.create_empty_account();
+    let reject_reason = test.execute_expect_failure(
+        test.transaction()
+            .call_method(
+                airdrop_result.airdrop_address,
+                "add_recipient",
+                args![extra_account],
+            )
+            .build_and_seal(&account_secret_key),
+        vec![owner_proof],
+    );
+    assert_reject_reason(reject_reason, "Airdrop allow list is full");
+}

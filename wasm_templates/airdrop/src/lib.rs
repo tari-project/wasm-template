@@ -7,6 +7,7 @@ pub mod {{ project-name | snake_case }} {
 
     pub struct {{ project-name | upper_camel_case }} {
         allow_list: BTreeSet<ComponentAddress>,
+        claimed_addresses: BTreeSet<ComponentAddress>,
         is_airdrop_open: bool,
         claimed_count: u64,
         vault: Vault,
@@ -21,6 +22,7 @@ pub mod {{ project-name | snake_case }} {
 
             Component::new(Self {
                 allow_list: BTreeSet::new(),
+                claimed_addresses: BTreeSet::new(),
                 is_airdrop_open: false,
                 claimed_count: 0,
                 vault: Vault::from_bucket(bucket),
@@ -31,10 +33,20 @@ pub mod {{ project-name | snake_case }} {
 
         pub fn add_recipient(&mut self, address: ComponentAddress) {
             assert!(self.is_airdrop_open, "Airdrop already started");
-            assert!(self.allow_list.len() < 100, "Airdrop allow list is full");
+            assert!(
+                !self.claimed_addresses.contains(&address),
+                "Address has already claimed"
+            );
             assert!(
                 !self.allow_list.contains(&address),
                 "Address already in allow list"
+            );
+            assert!(
+                self.allow_list
+                    .len()
+                    .saturating_add(self.claimed_count as usize)
+                    < 100,
+                "Airdrop allow list is full"
             );
             self.allow_list.insert(address);
         }
@@ -53,6 +65,7 @@ pub mod {{ project-name | snake_case }} {
                 address
             );
 
+            self.claimed_addresses.insert(address);
             self.claimed_count += 1;
             self.vault.withdraw(1u64)
         }
@@ -65,6 +78,7 @@ pub mod {{ project-name | snake_case }} {
                 address
             );
 
+            self.claimed_addresses.insert(address);
             self.claimed_count += 1;
             self.vault.withdraw_non_fungibles(Some(id))
         }
