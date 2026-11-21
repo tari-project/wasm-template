@@ -104,6 +104,10 @@ mod nft_marketplace {
         // process a new bid for an ongoing auction
         pub fn bid(&mut self, bidder_account_address: ComponentAddress, payment: Bucket) {
             assert!(
+                !self.vault.balance().is_zero(),
+                "Auction has already ended"
+            );
+            assert!(
                 Consensus::current_epoch() < self.ending_epoch,
                 "Auction has expired"
             );
@@ -164,6 +168,10 @@ mod nft_marketplace {
         // used by a bid seller to receive the bid payment, or by the buyer to get the NFT, whatever happens first
         pub fn finish(&mut self) {
             assert!(
+                !self.vault.balance().is_zero(),
+                "Auction has already ended"
+            );
+            assert!(
                 Consensus::current_epoch() >= self.ending_epoch,
                 "Auction is still in progress"
             );
@@ -173,11 +181,19 @@ mod nft_marketplace {
 
         // the seller wants to cancel the auction
         pub fn cancel(&mut self, seller_badge_bucket: Bucket) {
+            assert!(
+                !self.vault.balance().is_zero(),
+                "Auction has already ended"
+            );
             // as the seller badge resource cannot be minted and only one token exist,
             // we only need to check that the resource address matches
             assert!(
                 seller_badge_bucket.resource_address() == self.seller_badge_resource,
                 "Invalid seller badge"
+            );
+            assert!(
+                !seller_badge_bucket.amount().is_zero(),
+                "Seller badge bucket is empty"
             );
 
             // an auction cannot be cancelled if it has ended
